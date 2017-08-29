@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    // Use of ES6
+    "module": "amd",
+    // Module strategy that is likely to be use with official Polymer/typeScript support. See PolymerLabs/IMD
+    "experimentalDecorators": true,
+    //
+    "emitDecoratorMetadata": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "lib": [
+      "es2017",
+      "es6",
+      "es5",
+      "dom"
+    ],
+    "types":[],
+    "declaration": true,
+    /* Generates corresponding '.d.ts' file. */
+    "rootDir": "./",
+    /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
+    "baseUrl": "./",
+    "paths": {
+      "ozone-type": [
+        "./bower_components/ozone-type/ozone/include"
+      ],
+      "taktik-polymer-typeScript": [
+        "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
+      ]
+      }
+    },
+  "include": [
+    "types",
+    "src/ozone-edit-video.ts",
+    "./node_modules/taktik-polymer-typeScript/type/*"
+  ],
+  "exclude": [
+    "dist",
+    "build"
+  ]
+}

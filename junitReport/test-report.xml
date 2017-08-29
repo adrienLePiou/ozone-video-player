@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<testsuites>
+	<testsuite errors="0" failures="0" name="test/ozone-video-edit_test.html (chrome 60)" skipped="0" tests="2">
+		<testcase name="ozone-edit-video; instantiating the element with default properties works" time="12"/>
+		<testcase name="ozone-edit-video; setting a property on the element works" time="2"/>
+	</testsuite>
+	<testsuite errors="0" failures="0" name="test/ozone-video-edit_test.html (firefox 54)" skipped="0" tests="2">
+		<testcase name="ozone-edit-video; instantiating the element with default properties works" time="32"/>
+		<testcase name="ozone-edit-video; setting a property on the element works" time="4"/>
+	</testsuite>
+</testsuites>
