@@ -2,7 +2,9 @@
   "name": "ozone-edit-video",
   "main": "dist/index.html",
   "dependencies": {
-    "polymer": "^2.0.2"
+    "polymer": "^2.0.2",
+    "taktik-clappr-wrapper": "taktik/taktik-clappr-wrapper",
+    "my-template": "https://bitbucket.taktik.be/scm/sandbox/polymer-typescript-template.git"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
