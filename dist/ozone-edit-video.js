@@ -13825,7 +13825,7 @@ __webpack_require__(4);
 
 const RegisterHtmlTemplate = __webpack_require__(19);
 
-RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <style></style> <h2 on-tap=update>Project {{prop1}}!</h2> <my-template id=v prop1=\"import module\"></my-template> </template> </dom-module>");
+RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <style></style> <h2>Project {{prop1}}!</h2> <my-template id=v prop1=\"CLICK ME I'm an imported module\"></my-template> </template> </dom-module>");
 
 /***/ }),
 /* 50 */

@@ -8,7 +8,7 @@ import {customElement} from 'taktik-polymer-typeScript'
 import {getPlayer, ClapprType, ClapprPlayer} from 'taktik-clappr-wrapper'
 
 import 'my-template' // import webComponent
-import {MyTemplate} from 'bower_components/my-template/dist/src/my-template' // import type
+import {MyTemplate} from '../bower_components/my-template/src/my-template' // import type
 
 /**
  * <ozone-edit-video>

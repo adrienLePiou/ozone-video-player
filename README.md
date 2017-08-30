@@ -50,7 +50,7 @@ index.html
 - step 2: import where you need
 ```typescript
 import 'my-template' // import webComponent
-import {MyTemplate} from 'bower_components/ozone-edit-video/dist/src/ozone-edit-video' // import type
+import {MyTemplate} from '../bower_components/ozone-edit-video/src/ozone-edit-video' // import type
 ```
 
 

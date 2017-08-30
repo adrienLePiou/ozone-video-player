@@ -2,7 +2,7 @@ import "polymer/polymer.html";
 import './ozone-edit-video.html';
 import 'taktik-polymer-typeScript/type';
 import 'my-template';
-import { MyTemplate } from 'bower_components/my-template/dist/src/my-template';
+import { MyTemplate } from '../bower_components/my-template/src/my-template';
 /**
  * <ozone-edit-video>
  */
