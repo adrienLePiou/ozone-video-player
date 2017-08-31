@@ -28,13 +28,17 @@
       ],
       "taktik-polymer-typeScript": [
         "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
+      ],
+      "ozone-media-url": [
+        "./src/ozone-media-url"
       ]
       }
     },
   "include": [
     "types",
-    "src/ozone-edit-video.ts",
-    "./node_modules/taktik-polymer-typeScript/type/*"
+    "src/ozone-video-player.ts",
+    "./node_modules/taktik-polymer-typeScript/type/*",
+    "./bower_components/ozone-config/ozone-config.ts"
   ],
   "exclude": [
     "dist",
