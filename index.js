@@ -1,2 +1,2 @@
-/// <amd-module name="ozone-edit-video"/>
+/// <amd-module name="ozone-video-player"/>
 import './src/ozone-video-player.ts'

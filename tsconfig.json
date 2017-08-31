@@ -26,6 +26,9 @@
       "ozone-type": [
         "./bower_components/ozone-type/ozone/include"
       ],
+      "taktik-clappr-wrapper": [
+        "./bower_components/taktik-clappr-wrapper/src/taktik-clappr-wrapper"
+      ],
       "taktik-polymer-typeScript": [
         "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
       ],

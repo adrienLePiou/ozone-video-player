@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>ozone-edit-video test</title>
+    <title>ozone-video-player test</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
@@ -15,25 +15,25 @@
 
     <test-fixture id="BasicTestFixture">
       <template>
-        <ozone-edit-video></ozone-edit-video>
+        <ozone-video-player></ozone-video-player>
       </template>
     </test-fixture>
 
     <test-fixture id="ChangedPropertyTestFixture">
       <template>
-        <ozone-edit-video prop1="new-prop1"></ozone-edit-video>
+        <ozone-video-player prop1="new-prop1"></ozone-video-player>
       </template>
     </test-fixture>
 
     <script>
-      suite('ozone-edit-video', function() {
+      suite('ozone-video-player', function() {
 
         test('instantiating the element with default properties works', function() {
           var element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'ozone-edit-video');
+          assert.equal(element.prop1, 'ozone-video-player');
           var elementShadowRoot = element.shadowRoot;
           var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello ozone-edit-video!');
+          assert.equal(elementHeader.innerHTML, 'Hello ozone-video-player!');
         });
 
         test('setting a property on the element works', function() {

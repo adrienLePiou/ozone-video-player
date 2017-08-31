@@ -16,7 +16,7 @@ module.exports = {
     entry: path.resolve(__dirname, 'index.js'),
     // Tell Weback to output our bundle to ./dist/bundle.js
     output: {
-        filename: 'ozone-edit-video.js',
+        filename: 'ozone-video-player.js',
         path: path.resolve(__dirname, 'dist')
     },
     // Tell Webpack which directories to look in to resolve import statements.

@@ -1,5 +1,5 @@
 {
-  "name": "ozone-edit-video",
+  "name": "ozone-video-player",
   "main": "dist/index.html",
   "dependencies": {
     "polymer": "^2.0.2",

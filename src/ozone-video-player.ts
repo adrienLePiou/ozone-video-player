@@ -10,39 +10,31 @@ import {MediaUrl, OzonePreviewSize, SizeEnum} from './ozone-media-url'
 import {getPlayer, ClapprType, ClapprPlayer} from 'taktik-clappr-wrapper'
 import {Video} from 'ozone-type'
 
-export declare class VideoArea {
-    time: number;
-    duration:number
-}
-export declare type VideoMarker = Array<VideoArea>
-
-const myClapprMarkersPlugin = getClapprMarkersPlugin() as MarkersPluginType;
 /**
- * <ozone-edit-video>
+ * <ozone-video-player>
  */
-@customElement('ozone-edit-video')
-export class OzoneEditVideo extends Polymer.Element{
-
-    /**
-     * videoMarker ozone marker object
-     */
-    videoMarker: VideoMarker;
-
-    //element: HTMLElement;
+@customElement('ozone-video-player')
+export class ozoneVideoPlayer extends Polymer.Element{
 
     /**
      * Clappr player element
      */
-    player: ClapprPlayer | undefined;
+    public player: ClapprPlayer | undefined;
 
-    videoUrl: string;
+    /**
+     * Url to play a video directly
+     */
+    public videoUrl: string;
 
-    config: {configPromise: Promise<ConfigType>};
+    /**
+     * Reference to ozone configuration
+     */
+    private config: {configPromise: Promise<ConfigType>};
 
     /**
      * hide element and pause the player.
      */
-    hidden: boolean;
+    public hidden: boolean;
 
 
 
@@ -63,13 +55,22 @@ export class OzoneEditVideo extends Polymer.Element{
             },
         }
     }
+
+    /**
+     * Called on element ready
+     * @return {Promise<void>}
+     */
     async ready() {
         super.ready();
 
         this.config = getOzoneConfig();
     }
 
-
+    /**
+     * Load video from Ozone.
+     * @param {Video} data
+     * @return {Promise<void>}
+     */
     public async loadOzoneVideo(data?: Video){
         const config = await (this.config.configPromise);
         const ClapprWrapper = getPlayer();
@@ -90,7 +91,13 @@ export class OzoneEditVideo extends Polymer.Element{
 
         }
     }
-    async loadVideoUrl(url: string){
+
+    /**
+     * Load a video from an url.
+     * @param {string} url
+     * @return {Promise<void>}
+     */
+    public async loadVideoUrl(url: string){
 
         const ClapprWrapper = getPlayer();
         if(ClapprWrapper) {
@@ -104,13 +111,13 @@ export class OzoneEditVideo extends Polymer.Element{
         }
     }
 
-    visibilityChange(){
+    private visibilityChange(){
         if(this.hidden && this.player){
             this.player.pause();
         }
     }
 
-    videoUrlChange(url? : string){
+    private videoUrlChange(url? : string){
         if (url){
             this.loadVideoUrl(url);
         }

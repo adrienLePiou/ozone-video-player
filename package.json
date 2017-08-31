@@ -1,8 +1,8 @@
 {
-  "name": "ozone-edit-video",
+  "name": "ozone-video-player",
   "version": "1.0.0",
   "description": "",
-  "main": "ozone-edit-video.js",
+  "main": "ozone-video-player.js",
   "directories": {
     "test": "test"
   },
@@ -43,6 +43,7 @@
     "reflect-metadata": "^0.1.10",
     "run-sequence": "^2.1.0",
     "taktik-polymer-typeScript": "github:taktik/taktik-polymer-typeScript#webpack",
+    "typedoc": "^0.8.0",
     "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
     "web-component-tester": "^6.0.0"
   }
