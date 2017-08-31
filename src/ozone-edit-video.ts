@@ -62,11 +62,12 @@ export class OzoneEditVideo extends Polymer.Element{
         super.ready();
 
         this.loadVideo('any')
-        //this.buildMarker()
-        //this.buildMarker()
     }
 
-    buildMarker(): HTMLElement{
+    buildMarker(time: number, duration: number){
+
+        var aMarker = new myClapprMarkersPlugin.CropMarker(time,duration);
+
         //const element = this.$.element;
         const element = document.createElement('div');
 
@@ -98,7 +99,10 @@ export class OzoneEditVideo extends Polymer.Element{
             initTranslate(e)
         }, false);
 
-
+        function updateMarker(){
+            aMarker._updateDurationValueFromCss();
+            aMarker._updateTimeFromCss();
+        }
         function initResize(e: Event)
         {
             e.stopPropagation();
@@ -113,6 +117,7 @@ export class OzoneEditVideo extends Polymer.Element{
             const movePc = (movePx / parentElement.clientWidth) * 100;
 
             element.style.width = movePc + '%';
+            updateMarker();
         }
         function stopResize(e: Event)
         {
@@ -140,6 +145,7 @@ export class OzoneEditVideo extends Polymer.Element{
 
             element.style.left = left + movePc + '%';
             element.style.width =  parseFloat(element.style.width || '') -  movePc + '%';
+            updateMarker();
         }
         function stopResizeLeft(e: Event)
         {
@@ -167,13 +173,16 @@ export class OzoneEditVideo extends Polymer.Element{
             const movePc = (movePx / parentElement.clientWidth) * 100;
 
             element.style.left = left + movePc + '%';
+            updateMarker();
         }
         function stopTranstlate(e: Event)
         {
+            e.stopPropagation();
             window.removeEventListener('mousemove', transtlate, false);
             window.removeEventListener('mouseup', stopTranstlate, false);
         }
-        return element;
+        aMarker._$marker = element;
+        return aMarker;
     }
 
 
@@ -184,11 +193,9 @@ export class OzoneEditVideo extends Polymer.Element{
             //const mediaUrl = new MediaUrl(data.id as string, this.ozoneTypeApi.config);
             //const url = mediaUrl.getVideoUrl();
             const url = "http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4"
-            var aMarker = new myClapprMarkersPlugin.CropMarker(80,10);
-            aMarker._$marker = this.buildMarker();
+            var aMarker = this.buildMarker(80,10);
 
-            var bMarker = new myClapprMarkersPlugin.CropMarker(10,10);
-            bMarker._$marker = this.buildMarker();
+            var bMarker = this.buildMarker(10,10);
 
             this.player = new (ClapprWrapper as ClapprType).Player({
                 source: url,
@@ -222,8 +229,7 @@ export class OzoneEditVideo extends Polymer.Element{
             };
 
             this.$.add.onclick = () => {
-                var cMarker = new myClapprMarkersPlugin.CropMarker(50,10)
-                cMarker._$marker = this.buildMarker();
+                var cMarker = this.buildMarker(50, 5);
                 markersPlugin.addMarker(cMarker);
             };
 

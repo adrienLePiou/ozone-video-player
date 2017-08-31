@@ -102,6 +102,10 @@ export declare class CropMarker extends BaseMarker {
     render(): void
 
     _buildMarkerEl(): HTMLElement;
+
+    _updateDurationValueFromCss(): void
+
+    _updateTimeFromCss(): void
 }
 
 export interface MarkersPluginType {
