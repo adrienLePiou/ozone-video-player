@@ -10,9 +10,10 @@ Install form github
 
 bower install  taktik/ozone-video-player --save
 
-Then include the element in your javaScrip
+Then include the element in your javaScrip with clappr
 
 ```html
+<script type="text/javascript" src="bower_components/clappr/dist/clappr.js"></script>
 <script type="text/javascript" src="bower_components/ozone-video-player/dist/ozone-video-player.js"></script></body>
 
 <ozone-video-player></ozone-video-player>
