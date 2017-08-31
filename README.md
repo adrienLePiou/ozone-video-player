@@ -1,6 +1,6 @@
 # \<ozone-video-player\>
 
-Template application to develop polymer-typeScript webComponents
+WebComponent that play video from Ozone.
 
 # usage
 
