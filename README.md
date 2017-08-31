@@ -4,8 +4,7 @@ WebComponent that play video from Ozone.
 
 # usage
 
-
-## Install an configure this module in a JavaScript project
+## Install and configure this module in a JavaScript project
 
 Install form github
 
@@ -19,6 +18,8 @@ Then include the element in your javaScrip
 <ozone-video-player></ozone-video-player>
 ```
 
+
+Add conf.ozone.json at root of your project. You can adapt conf.ozone.json from this repo.
 
 ## API
 
