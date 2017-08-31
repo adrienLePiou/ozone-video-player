@@ -1,27 +1,36 @@
 import "polymer/polymer.html";
 import './ozone-edit-video.html';
 import 'taktik-polymer-typeScript/type';
-import 'my-template';
-import { MyTemplate } from '../bower_components/my-template/src/my-template';
+import { CropMarker } from './clappr-markers-plugin-wrapper';
+import { ClapprPlayer } from 'taktik-clappr-wrapper';
+export declare class VideoArea {
+    time: number;
+    duration: number;
+}
+export declare type VideoMarker = Array<VideoArea>;
 /**
  * <ozone-edit-video>
  */
 export declare class OzoneEditVideo extends Polymer.Element {
     /**
-     * property one
+     * videoMarker ozone marker object
      */
-    prop1: string;
-    $: {
-        v: MyTemplate;
-    };
-    increment: number;
+    videoMarker: VideoMarker;
+    /**
+     * Clappr player element
+     */
+    player: ClapprPlayer | undefined;
+    videoUrl: string;
     static readonly properties: {
-        prop1: {
+        player: {
+            type: ObjectConstructor;
+            value: boolean;
+        };
+        videoUrl: {
             type: StringConstructor;
-            notify: boolean;
-            value: string;
         };
     };
     ready(): void;
-    update(): void;
+    buildMarker(time: number, duration: number): CropMarker;
+    loadVideo(data?: any): Promise<void>;
 }

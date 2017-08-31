@@ -4,7 +4,7 @@
   "dependencies": {
     "polymer": "^2.0.2",
     "taktik-clappr-wrapper": "taktik/taktik-clappr-wrapper",
-    "my-template": "https://bitbucket.taktik.be/scm/sandbox/polymer-typescript-template.git"
+    "clappr-markers-plugin": "hubjac1/clappr-markers-plugin#^0.6.3"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",

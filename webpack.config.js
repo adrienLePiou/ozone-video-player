@@ -2,8 +2,14 @@
 
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+var Clean = require('clean-webpack-plugin');
 var path = require('path');
-
+/*
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const extractSass = new ExtractTextPlugin({
+    filename: "[name].[contenthash].css",
+});
+*/
 
 module.exports = {
     // Tell Webpack which file kicks off our app.
@@ -49,7 +55,22 @@ module.exports = {
             {
                 test: /\.ts$/,
                 use: 'ts-loader',
-            }
+            },/*
+            {
+                test: /\.sass/,
+                use: extractSass.extract({
+                    use: [{
+                        loader: "css-loader"
+                    }, {
+                        loader: "sass-loader",
+                        options: {
+                            includePaths: [path.resolve(__dirname, "./node_modules/compass-mixins/lib")]
+                        }
+                    }],
+                    // use style-loader in development
+                    fallback: "style-loader"
+                }),
+            }*/
         ]
     },
     // Enable the Webpack dev server which will build, serve, and reload our
@@ -73,5 +94,7 @@ module.exports = {
             from: path.resolve(__dirname, 'bower_components/webcomponentsjs/*.js'),
             to: 'bower_components/webcomponentsjs/[name].[ext]'
         }]),
+        new Clean(['dist']),
+        //extractSass,
     ]
 };

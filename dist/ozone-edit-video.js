@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ 	return __webpack_require__(__webpack_require__.s = 17);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -4084,7 +4084,7 @@ __webpack_require__(4);
 /***/ (function(module, exports, __webpack_require__) {
 
 
-__webpack_require__(14);
+__webpack_require__(12);
 
 (function () {
   'use strict';
@@ -4119,123 +4119,12 @@ __webpack_require__(14);
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(23)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
-    "use strict";
-
-    Object.defineProperty(exports, "__esModule", { value: true });
-    ;
-    function customElement(tagname) {
-        return clazz => {
-            clazz.is = tagname;
-            window[clazz.name] = clazz; // Register class in windows se that is can be use without IMD module loading.
-            // Useful for import in pure JS project.
-            window.customElements.define(tagname, clazz);
-        };
-    }
-    exports.customElement = customElement;
-    /**
-     * A TypeScript class decorator that declare a global class
-     * `tagname` and the decorated class.
-     */
-    function jsElement() {
-        return clazz => {
-            window[clazz.name] = clazz; // Register class in windows se that is can be use without IMD module loading.
-            // Useful for import in pure JS project.
-        };
-    }
-    exports.jsElement = jsElement;
-    ;
-    /**
-     * A TypeScript property decorator factory that defines this as a Polymer
-     * property.
-     *
-     * This function must be invoked to return a decorator.
-     */
-    function property(options) {
-        return (proto, propName) => {
-            const notify = options && options.notify;
-            const type = Reflect.getMetadata("design:type", proto, propName);
-            const config = _ensureConfig(proto);
-            config.properties[propName] = {
-                type,
-                notify
-            };
-        };
-    }
-    exports.property = property;
-    function domElement() {
-        return (proto, propName) => {};
-    }
-    exports.domElement = domElement;
-    /**
-     * A TypeScript property decorator factory that causes the decorated method to
-     * be called when a property changes. `targets` is either a single property
-     * name, or a list of property names.
-     *
-     * This function must be invoked to return a decorator.
-     */
-    function observe(targets) {
-        return (proto, propName) => {
-            const targetString = typeof targets === 'string' ? targets : targets.join(',');
-            const config = _ensureConfig(proto);
-            config.observers.push(`${propName}(${targetString})`);
-        };
-    }
-    exports.observe = observe;
-    function _ensureConfig(proto) {
-        const ctor = proto.constructor;
-        if (ctor.hasOwnProperty('__polymer_ts_config')) {
-            return ctor.__polymer_ts_config;
-        }
-        Object.defineProperty(ctor, 'config', {
-            get() {
-                return ctor.__polymer_ts_config;
-            }
-        });
-        const config = ctor.__polymer_ts_config = ctor.__polymer_ts_config || {};
-        config.properties = config.properties || {};
-        config.observers = config.observers || [];
-        return config;
-    }
-}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-__webpack_require__(13);
-
-__webpack_require__(38);
-
-__webpack_require__(40);
-
-__webpack_require__(41);
-
-__webpack_require__(42);
-
-__webpack_require__(43);
-
-__webpack_require__(44);
-
-__webpack_require__(45);
-
-__webpack_require__(48);
-
-// bc
-Polymer.Base = Polymer.LegacyElementMixin(HTMLElement).prototype;
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
 
 __webpack_require__(26);
 
-__webpack_require__(14);
+__webpack_require__(12);
 
-__webpack_require__(17);
+__webpack_require__(15);
 
 __webpack_require__(1);
 
@@ -5167,19 +5056,19 @@ __webpack_require__(36);
 })();
 
 /***/ }),
-/* 14 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
 __webpack_require__(0);
 
-__webpack_require__(15);
+__webpack_require__(13);
 
 __webpack_require__(1);
 
 __webpack_require__(5);
 
-__webpack_require__(16);
+__webpack_require__(14);
 
 __webpack_require__(2);
 
@@ -5990,7 +5879,7 @@ __webpack_require__(6);
 })();
 
 /***/ }),
-/* 15 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -6048,7 +5937,7 @@ __webpack_require__(2);
 })();
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -6194,7 +6083,7 @@ __webpack_require__(2);
 })();
 
 /***/ }),
-/* 17 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -6257,7 +6146,7 @@ __webpack_require__(32);
 })();
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -6545,86 +6434,18 @@ __webpack_require__(0);
 })();
 
 /***/ }),
-/* 19 */
-/***/ (function(module, exports) {
-
-/* eslint-env browser */
-
-class RegisterHtmlTemplate {
-  /**
-   * Create a `<template>` element to hold `<dom-module>` content.
-   * This bit of code will execute in the context of the main document,
-   * calling `importNode` on the `<template>`, which in turn triggers
-   * the lifecycle of the `<dom-module>` and allows it to insert its
-   * content into Polymer's global module map. When a Polymer element
-   * boots up it will fetch its template from this module map.
-   * https://github.com/Polymer/polymer/blob/master/lib/mixins/element-mixin.html#L501-L538
-   * @param {string} val A `<dom-module>` as an HTML string
-   */
-  static register(val) {
-    let content;
-    const template = document.createElement('template');
-    template.innerHTML = val;
-    if (template.content) {
-      content = template.content; // eslint-disable-line prefer-destructuring
-    } else {
-      content = document.createDocumentFragment();
-      while (template.firstChild) {
-        content.appendChild(template.firstChild);
-      }
-    }
-    document.importNode(content, true);
-  }
-  /**
-   * Content that will be injected into the main document. This is primarily
-   * for things like `<iron-iconset>` and `<custom-style>` which do not have
-   * templates but rely on HTML Imports ability to apply content to the main
-   * document.
-   * @param {string} val An HTML string
-   */
-  static toBody(val) {
-    const trimmedVal = val.trim();
-    if (trimmedVal) {
-      const div = document.createElement('div');
-      div.innerHTML = trimmedVal;
-      if (div.firstChild) {
-        if (document.body) {
-          document.body.insertBefore(div.firstChild, document.body.firstChild);
-        } else {
-          document.addEventListener('DOMContentLoaded', () => {
-            document.body.insertBefore(div.firstChild, document.body.firstChild);
-          });
-        }
-      }
-    }
-  }
-}
-
-module.exports = RegisterHtmlTemplate;
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(50), __webpack_require__(51), __webpack_require__(52), __webpack_require__(53)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ }),
-/* 21 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_ozone_edit_video_ts__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_ozone_edit_video_ts__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_ozone_edit_video_ts___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__src_ozone_edit_video_ts__);
 
 
+
 /***/ }),
-/* 22 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -6633,37 +6454,177 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __decorate =
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(11), __webpack_require__(12), __webpack_require__(49), __webpack_require__(20), __webpack_require__(54)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, taktik_polymer_typeScript_1) {
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(19), __webpack_require__(23), __webpack_require__(24), __webpack_require__(25), __webpack_require__(49), __webpack_require__(51)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, taktik_polymer_typeScript_1, clappr_markers_plugin_wrapper_1, taktik_clappr_wrapper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    const myClapprMarkersPlugin = clappr_markers_plugin_wrapper_1.getClapprMarkersPlugin();
     /**
      * <ozone-edit-video>
      */
     let OzoneEditVideo = class OzoneEditVideo extends Polymer.Element {
-        /**
-         * <ozone-edit-video>
-         */
-        constructor() {
-            super(...arguments);
-            this.increment = 0;
-        }
         static get properties() {
             return {
-                prop1: {
-                    type: String,
-                    notify: true,
-                    value: 'ozone-edit-video ici',
+                player: {
+                    type: Object,
+                    value: false,
+                },
+                videoUrl: {
+                    type: String
                 },
             };
         }
         ready() {
             super.ready();
-            this.$.v.addEventListener('click', () => { this.update(); });
+            this.loadVideo('any');
         }
-        update() {
-            console.log('update');
-            this.increment++;
-            this.$.v.prop1 = `click ${this.increment}`;
+        buildMarker(time, duration) {
+            var aMarker = new myClapprMarkersPlugin.CropMarker(time, duration);
+            //const element = this.$.element;
+            const element = document.createElement('div');
+            //this.element.classList.add('crop-marker');
+            //const element = document.createElement('div');
+            element.className = 'element';
+            //this.$.container.appendChild(element)
+            var resizer = document.createElement('div');
+            resizer.className = 'resizer';
+            resizer.style.right = '0';
+            element.appendChild(resizer);
+            resizer.addEventListener('mousedown', (e) => {
+                initResize(e);
+            }, false);
+            var resizerL = document.createElement('div');
+            resizerL.className = 'resizer';
+            element.appendChild(resizerL);
+            resizerL.addEventListener('mousedown', (e) => {
+                initResizeLeft(e);
+            }, false);
+            element.addEventListener('mousedown', (e) => {
+                initTranslate(e);
+            }, false);
+            function updateMarker() {
+                aMarker.getDuration();
+                aMarker.getTime();
+            }
+            function initResize(e) {
+                e.stopPropagation();
+                window.addEventListener('mousemove', Resize, false);
+                window.addEventListener('mouseup', stopResize, false);
+            }
+            function Resize(e) {
+                e.stopPropagation();
+                const movePx = (e.clientX - element.offsetLeft);
+                const parentElement = element.parentElement;
+                const movePc = (movePx / parentElement.clientWidth) * 100;
+                element.style.width = movePc + '%';
+                updateMarker();
+            }
+            function stopResize(e) {
+                e.stopPropagation();
+                window.removeEventListener('mousemove', Resize, false);
+                window.removeEventListener('mouseup', stopResize, false);
+            }
+            function initResizeLeft(e) {
+                e.stopPropagation();
+                window.addEventListener('mousemove', ResizeLeft, false);
+                window.addEventListener('mouseup', stopResizeLeft, false);
+            }
+            function ResizeLeft(e) {
+                e.stopPropagation();
+                let left = parseFloat(element.style.left || '');
+                if (isNaN(left)) {
+                    left = 0;
+                }
+                const movePx = (e.clientX - element.offsetLeft);
+                const parentElement = element.parentElement;
+                const movePc = (movePx / parentElement.clientWidth) * 100;
+                element.style.left = left + movePc + '%';
+                element.style.width = parseFloat(element.style.width || '') - movePc + '%';
+                updateMarker();
+            }
+            function stopResizeLeft(e) {
+                e.stopPropagation();
+                window.removeEventListener('mousemove', ResizeLeft, false);
+                window.removeEventListener('mouseup', stopResizeLeft, false);
+            }
+            function initTranslate(e) {
+                e.stopPropagation();
+                window.addEventListener('mousemove', transtlate, false);
+                window.addEventListener('mouseup', stopTranstlate, false);
+            }
+            function transtlate(e) {
+                e.stopPropagation();
+                let left = parseFloat(element.style.left || '');
+                if (isNaN(left)) {
+                    left = 0;
+                }
+                const movePx = (e.clientX - element.offsetLeft);
+                const parentElement = element.parentElement;
+                const movePc = (movePx / parentElement.clientWidth) * 100;
+                element.style.left = left + movePc + '%';
+                updateMarker();
+            }
+            function stopTranstlate(e) {
+                e.stopPropagation();
+                window.removeEventListener('mousemove', transtlate, false);
+                window.removeEventListener('mouseup', stopTranstlate, false);
+            }
+            aMarker._$marker = element;
+            return aMarker;
+        }
+        loadVideo(data) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const ClapprWrapper = taktik_clappr_wrapper_1.getPlayer();
+                if (ClapprWrapper) {
+                    //const mediaUrl = new MediaUrl(data.id as string, this.ozoneTypeApi.config);
+                    //const url = mediaUrl.getVideoUrl();
+                    const url = this.videoUrl;
+                    console.log('url', url);
+                    var aMarker = this.buildMarker(80, 10);
+                    var bMarker = this.buildMarker(10, 10);
+                    this.player = new ClapprWrapper.Player({
+                        source: url,
+                        plugins: {
+                            core: [myClapprMarkersPlugin],
+                        },
+                        markersPlugin: {
+                            markers: [
+                                aMarker,
+                                bMarker,
+                            ],
+                        }
+                    });
+                    //console.log(aMarker)
+                    var playerElement = document.createElement('div');
+                    this.$.player.appendChild(playerElement);
+                    this.player.attachTo(playerElement);
+                    this.set('isVideo', true);
+                    var markersPlugin = this.player.getPlugin('markers-plugin');
+                    this.$.save.onclick = () => {
+                        markersPlugin.getAll().forEach((maker) => {
+                            debugger;
+                            console.log('Marker - start:', maker.getTime(), ' duration:', maker.getDuration());
+                        });
+                    };
+                    this.$.add.onclick = () => {
+                        var cMarker = this.buildMarker(50, 5);
+                        markersPlugin.addMarker(cMarker);
+                    };
+                    this.$.remove.onclick = () => {
+                        markersPlugin.removeMarker(aMarker);
+                    };
+                    this.$.clear.onclick = () => {
+                        markersPlugin.clearMarkers();
+                    };
+                }
+            });
         }
     };
     OzoneEditVideo = __decorate([
@@ -6675,7 +6636,92 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __decorate =
 
 
 /***/ }),
-/* 23 */
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(20)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ;
+    function customElement(tagname) {
+        return clazz => {
+            clazz.is = tagname;
+            window[clazz.name] = clazz; // Register class in windows se that is can be use without IMD module loading.
+            // Useful for import in pure JS project.
+            window.customElements.define(tagname, clazz);
+        };
+    }
+    exports.customElement = customElement;
+    /**
+     * A TypeScript class decorator that declare a global class
+     * `tagname` and the decorated class.
+     */
+    function jsElement() {
+        return clazz => {
+            window[clazz.name] = clazz; // Register class in windows se that is can be use without IMD module loading.
+            // Useful for import in pure JS project.
+        };
+    }
+    exports.jsElement = jsElement;
+    ;
+    /**
+     * A TypeScript property decorator factory that defines this as a Polymer
+     * property.
+     *
+     * This function must be invoked to return a decorator.
+     */
+    function property(options) {
+        return (proto, propName) => {
+            const notify = options && options.notify;
+            const type = Reflect.getMetadata("design:type", proto, propName);
+            const config = _ensureConfig(proto);
+            config.properties[propName] = {
+                type,
+                notify
+            };
+        };
+    }
+    exports.property = property;
+    function domElement() {
+        return (proto, propName) => {};
+    }
+    exports.domElement = domElement;
+    /**
+     * A TypeScript property decorator factory that causes the decorated method to
+     * be called when a property changes. `targets` is either a single property
+     * name, or a list of property names.
+     *
+     * This function must be invoked to return a decorator.
+     */
+    function observe(targets) {
+        return (proto, propName) => {
+            const targetString = typeof targets === 'string' ? targets : targets.join(',');
+            const config = _ensureConfig(proto);
+            config.observers.push(`${propName}(${targetString})`);
+        };
+    }
+    exports.observe = observe;
+    function _ensureConfig(proto) {
+        const ctor = proto.constructor;
+        if (ctor.hasOwnProperty('__polymer_ts_config')) {
+            return ctor.__polymer_ts_config;
+        }
+        Object.defineProperty(ctor, 'config', {
+            get() {
+                return ctor.__polymer_ts_config;
+            }
+        });
+        const config = ctor.__polymer_ts_config = ctor.__polymer_ts_config || {};
+        config.properties = config.properties || {};
+        config.observers = config.observers || [];
+        return config;
+    }
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process, global) {/*! *****************************************************************************
@@ -7785,10 +7831,10 @@ var Reflect;
     })(typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : Function("return this;")());
 })(Reflect || (Reflect = {}));
 //# sourceMappingURL=Reflect.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24), __webpack_require__(25)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21), __webpack_require__(22)))
 
 /***/ }),
-/* 24 */
+/* 21 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -7978,7 +8024,7 @@ process.umask = function () {
 };
 
 /***/ }),
-/* 25 */
+/* 22 */
 /***/ (function(module, exports) {
 
 var g;
@@ -8001,6 +8047,88 @@ try {
 // easier to handle this case. if(!global) { ...}
 
 module.exports = g;
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * return ClapprMarkersPlugin
+     * @return {MarkersPluginType|any}
+     */
+    function getClapprMarkersPlugin() {
+        let pluginCopy;
+        try {
+            pluginCopy = ClapprMarkersPlugin;
+            console.log('ClapprMarkersPlugin OK');
+        }
+        catch (err) {
+            pluginCopy = undefined;
+            console.log('ClapprMarkersPlugin not found');
+        }
+        return pluginCopy;
+    }
+    exports.getClapprMarkersPlugin = getClapprMarkersPlugin;
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/// <amd-module name="taktik-clappr-wrapper"/>
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * return Clapper player
+     * @return {ClapprType|any}
+     */
+    function getPlayer() {
+        let clapperCopy;
+        try {
+            clapperCopy = Clappr;
+            console.log('clappr OK');
+        } catch (err) {
+            clapperCopy = undefined;
+            console.log('clappr not found');
+        }
+        return clapperCopy;
+    }
+    exports.getPlayer = getPlayer;
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+__webpack_require__(11);
+
+__webpack_require__(38);
+
+__webpack_require__(40);
+
+__webpack_require__(41);
+
+__webpack_require__(42);
+
+__webpack_require__(43);
+
+__webpack_require__(44);
+
+__webpack_require__(45);
+
+__webpack_require__(48);
+
+// bc
+Polymer.Base = Polymer.LegacyElementMixin(HTMLElement).prototype;
 
 /***/ }),
 /* 26 */
@@ -10928,7 +11056,7 @@ __webpack_require__(0);
 
 __webpack_require__(0);
 
-__webpack_require__(15);
+__webpack_require__(13);
 
 __webpack_require__(37);
 
@@ -11249,7 +11377,7 @@ __webpack_require__(8);
 
 __webpack_require__(0);
 
-__webpack_require__(18);
+__webpack_require__(16);
 
 __webpack_require__(3);
 
@@ -11536,7 +11664,7 @@ __webpack_require__(39);
 /***/ (function(module, exports, __webpack_require__) {
 
 
-__webpack_require__(13);
+__webpack_require__(11);
 
 (function () {
 
@@ -12022,7 +12150,7 @@ __webpack_require__(6);
 
 __webpack_require__(4);
 
-__webpack_require__(17);
+__webpack_require__(15);
 
 (function () {
   'use strict';
@@ -13110,7 +13238,7 @@ __webpack_require__(10);
 
 __webpack_require__(1);
 
-__webpack_require__(18);
+__webpack_require__(16);
 
 (function () {
   'use strict';
@@ -13530,7 +13658,7 @@ __webpack_require__(18);
 
 __webpack_require__(46);
 
-__webpack_require__(16);
+__webpack_require__(14);
 
 (function () {
   'use strict';
@@ -13823,12 +13951,81 @@ __webpack_require__(4);
 /***/ (function(module, exports, __webpack_require__) {
 
 
-const RegisterHtmlTemplate = __webpack_require__(19);
+const RegisterHtmlTemplate = __webpack_require__(50);
 
-RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <style></style> <h2>Project {{prop1}}!</h2> <my-template id=v prop1=\"CLICK ME I'm an imported module\"></my-template> </template> </dom-module>");
+RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <style>.element{position:absolute;overflow:hidden;background:rgba(255,255,255,.7);min-height:20px;max-height:20px;width:20%}.resizer{width:5px;height:100%;background:#2b80f3;position:absolute;bottom:0;cursor:se-resize}</style> <h2>Project!</h2> <div id=player></div> <p></p> <input type=button id=remove value=\"remove marker\"> <input type=button id=add value=\"add marker\"> <input type=button id=save value=save> <input type=button id=clear value=clear> </template> </dom-module>");
 
 /***/ }),
 /* 50 */
+/***/ (function(module, exports) {
+
+/* eslint-env browser */
+
+class RegisterHtmlTemplate {
+  /**
+   * Create a `<template>` element to hold `<dom-module>` content.
+   * This bit of code will execute in the context of the main document,
+   * calling `importNode` on the `<template>`, which in turn triggers
+   * the lifecycle of the `<dom-module>` and allows it to insert its
+   * content into Polymer's global module map. When a Polymer element
+   * boots up it will fetch its template from this module map.
+   * https://github.com/Polymer/polymer/blob/master/lib/mixins/element-mixin.html#L501-L538
+   * @param {string} val A `<dom-module>` as an HTML string
+   */
+  static register(val) {
+    let content;
+    const template = document.createElement('template');
+    template.innerHTML = val;
+    if (template.content) {
+      content = template.content; // eslint-disable-line prefer-destructuring
+    } else {
+      content = document.createDocumentFragment();
+      while (template.firstChild) {
+        content.appendChild(template.firstChild);
+      }
+    }
+    document.importNode(content, true);
+  }
+  /**
+   * Content that will be injected into the main document. This is primarily
+   * for things like `<iron-iconset>` and `<custom-style>` which do not have
+   * templates but rely on HTML Imports ability to apply content to the main
+   * document.
+   * @param {string} val An HTML string
+   */
+  static toBody(val) {
+    const trimmedVal = val.trim();
+    if (trimmedVal) {
+      const div = document.createElement('div');
+      div.innerHTML = trimmedVal;
+      if (div.firstChild) {
+        if (document.body) {
+          document.body.insertBefore(div.firstChild, document.body.firstChild);
+        } else {
+          document.addEventListener('DOMContentLoaded', () => {
+            document.body.insertBefore(div.firstChild, document.body.firstChild);
+          });
+        }
+      }
+    }
+  }
+}
+
+module.exports = RegisterHtmlTemplate;
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(52), __webpack_require__(53), __webpack_require__(54), __webpack_require__(55)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ }),
+/* 52 */
 /***/ (function(module, exports) {
 
 /**
@@ -13839,7 +14036,7 @@ RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <styl
 
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports) {
 
 /**
@@ -13854,72 +14051,19 @@ RegisterHtmlTemplate.register("<dom-module id=ozone-edit-video> <template> <styl
 
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, exports) {
 
 
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, exports) {
 
 /**
  * Created by hubert on 8/06/17.
  */
 
-
-/***/ }),
-/* 54 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_my_template_ts__ = __webpack_require__(55);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__src_my_template_ts___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__src_my_template_ts__);
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(11), __webpack_require__(12), __webpack_require__(56), __webpack_require__(20)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, taktik_polymer_typeScript_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     */
-    let MyTemplate = class MyTemplate extends Polymer.Element {
-        static get properties() {
-            return {
-                prop1: {
-                    type: String,
-                    notify: true,
-                    value: 'my-template',
-                },
-            };
-        }
-    };
-    MyTemplate = __decorate([
-        taktik_polymer_typeScript_1.customElement('my-template')
-    ], MyTemplate);
-    exports.MyTemplate = MyTemplate;
-}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-const RegisterHtmlTemplate = __webpack_require__(19);
-
-RegisterHtmlTemplate.register("<dom-module id=my-template> <template> <style></style> <h2>Hello {{prop1}}!</h2> </template> </dom-module>");
 
 /***/ })
 /******/ ]);

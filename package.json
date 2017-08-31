@@ -37,7 +37,7 @@
     "merge2": "^1.1.0",
     "reflect-metadata": "^0.1.10",
     "run-sequence": "^2.1.0",
-    "taktik-polymer-typeScript": "git://github.com/taktik/taktik-polymer-typescript.git#webpack",
+    "taktik-polymer-typeScript": "github:taktik/taktik-polymer-typeScript#webpack",
     "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
     "web-component-tester": "^6.0.0"
   }
