@@ -1,8 +1,41 @@
 <dom-module id="ozone-edit-video">
   <template>
     <style>
+      .block {
+        position: relative;
+        float:left;
+        overflow: hidden;
+        background: blue;
+        height: 100%;
+        width: 10%;
+      }
+      #element {
+        position: relative;
+        overflow: hidden;
+        background: green;
+        height: 100%;
+        width: 20%;
+      }
+      #container {
+        position: absolute;
+        overflow: hidden;
+        background: yellow;
+        height: 200px;
+        width: 2000px;
+      }
     </style>
-    <h2>Project {{prop1}}!</h2>
-    <my-template id="v" prop1="CLICK ME I'm an imported module"></my-template>
+    <h2>Project!</h2>
+    <div id="player"></div>
+
+    <p></p>
+    <input type="button" id="remove" value="remove marker">
+    <input type="button" id="add" value="add marker">
+    <input type="button" id="save" value="save">
+    <input type="button" id="clear" value="clear">
+<div id="container">
+    <div id="element">Element resizable</div>
+    <div class="block">Block1</div>
+    <div class="block">Block2</div>
+</div>
   </template>
 </dom-module>
