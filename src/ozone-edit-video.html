@@ -1,27 +1,21 @@
 <dom-module id="ozone-edit-video">
   <template>
     <style>
-      .block {
-        position: relative;
-        float:left;
-        overflow: hidden;
-        background: blue;
-        height: 100%;
-        width: 10%;
-      }
-      #element {
-        position: relative;
-        overflow: hidden;
-        background: green;
-        height: 100%;
-        width: 20%;
-      }
-      #container {
+      .element {
         position: absolute;
         overflow: hidden;
-        background: yellow;
-        height: 200px;
-        width: 2000px;
+        background: rgba(255,255,255,0.7);
+        min-height: 20px;
+        max-height: 20px;
+        width: 20%;
+      }
+      .resizer{
+        width: 5px;
+        height: 100%;
+        background: #2b80f3;
+        position: absolute;
+        bottom: 0;
+        cursor: se-resize;
       }
     </style>
     <h2>Project!</h2>
@@ -32,10 +26,6 @@
     <input type="button" id="add" value="add marker">
     <input type="button" id="save" value="save">
     <input type="button" id="clear" value="clear">
-<div id="container">
-    <div id="element">Element resizable</div>
-    <div class="block">Block1</div>
-    <div class="block">Block2</div>
-</div>
+
   </template>
 </dom-module>

@@ -61,61 +61,77 @@ export class OzoneEditVideo extends Polymer.Element{
     ready() {
         super.ready();
 
-        const element = this.$.element;
-        //this.element = document.createElement('div');
+        this.loadVideo('any')
+        //this.buildMarker()
+        //this.buildMarker()
+    }
+
+    buildMarker(): HTMLElement{
+        //const element = this.$.element;
+        const element = document.createElement('div');
+
         //this.element.classList.add('crop-marker');
         //const element = document.createElement('div');
-        element.classList.add('element');
+
+        element.className = 'element';
+
+        //this.$.container.appendChild(element)
+
         var resizer = document.createElement('div');
         resizer.className = 'resizer';
-        resizer.style.width = '5px';
-        resizer.style.height = '100%';
-        resizer.style.background = 'red';
-        resizer.style.position = 'absolute';
         resizer.style.right = '0';
-        resizer.style.bottom = '0';
-        resizer.style.cursor = 'se-resize';
+
         element.appendChild(resizer);
         resizer.addEventListener('mousedown', (e) => {
             initResize(e)
         }, false);
         var resizerL = document.createElement('div');
         resizerL.className = 'resizer';
-        resizerL.style.width = '5px';
-        resizerL.style.height = '100%';
-        resizerL.style.background = 'red';
-        resizerL.style.position = 'absolute';
-//resizerL.style.right = 0;
-        resizerL.style.bottom = '0';
-        resizerL.style.cursor = 'se-resize';
         element.appendChild(resizerL);
+
         resizerL.addEventListener('mousedown', (e) => {
-            initResizeL(e)
+            initResizeLeft(e)
+        }, false);
+
+
+        element.addEventListener('mousedown', (e) => {
+            initTranslate(e)
         }, false);
 
 
         function initResize(e: Event)
         {
+            e.stopPropagation();
             window.addEventListener('mousemove', Resize, false);
             window.addEventListener('mouseup', stopResize, false);
         }
         function Resize(e: MouseEvent)
         {
+            e.stopPropagation();
             const movePx = (e.clientX - element.offsetLeft)
             const parentElement = element.parentElement as HTMLElement;
             const movePc = (movePx / parentElement.clientWidth) * 100;
+
             element.style.width = movePc + '%';
         }
-
-        function initResizeL(e: Event)
+        function stopResize(e: Event)
         {
-            window.addEventListener('mousemove', ResizeL, false);
-            window.addEventListener('mouseup', stopResizeL, false);
+            e.stopPropagation();
+            window.removeEventListener('mousemove', Resize, false);
+            window.removeEventListener('mouseup', stopResize, false);
         }
-        function ResizeL(e: MouseEvent )
+
+        function initResizeLeft(e: Event)
         {
+            e.stopPropagation();
+            window.addEventListener('mousemove', ResizeLeft, false);
+            window.addEventListener('mouseup', stopResizeLeft, false);
+        }
+        function ResizeLeft(e: MouseEvent)
+        {
+            e.stopPropagation();
             let left = parseFloat(element.style.left || '')
-            if (isNaN(left)){
+            if (isNaN(left)) {
                 left = 0;
             }
             const movePx = (e.clientX - element.offsetLeft);
@@ -123,25 +139,42 @@ export class OzoneEditVideo extends Polymer.Element{
             const movePc = (movePx / parentElement.clientWidth) * 100;
 
             element.style.left = left + movePc + '%';
-            //console.log('element.style.width', element.style.width, movePc)
-            //element.style.width =  parseFloat(element.style.width || '') +  movePc + '%';
+            element.style.width =  parseFloat(element.style.width || '') -  movePc + '%';
         }
-        function stopResize(e: Event)
+        function stopResizeLeft(e: Event)
         {
-            console.log('stop tresize')
-            window.removeEventListener('mousemove', Resize, false);
-            window.removeEventListener('mouseup', stopResize, false);
-        }
-        function stopResizeL(e: Event)
-        {
-            console.log('stop tresize L')
-            window.removeEventListener('mousemove', ResizeL, false);
-            window.removeEventListener('mouseup', stopResizeL, false);
+            e.stopPropagation();
+            window.removeEventListener('mousemove', ResizeLeft, false);
+            window.removeEventListener('mouseup', stopResizeLeft, false);
         }
 
-        this.loadVideo('any')
+
+        function initTranslate(e: Event)
+        {
+            e.stopPropagation();
+            window.addEventListener('mousemove', transtlate, false);
+            window.addEventListener('mouseup', stopTranstlate, false);
+        }
+        function transtlate(e: MouseEvent )
+        {
+            e.stopPropagation();
+            let left = parseFloat(element.style.left || '')
+            if (isNaN(left)) {
+                left = 0;
+            }
+            const movePx = (e.clientX - element.offsetLeft);
+            const parentElement = element.parentElement as HTMLElement;
+            const movePc = (movePx / parentElement.clientWidth) * 100;
+
+            element.style.left = left + movePc + '%';
+        }
+        function stopTranstlate(e: Event)
+        {
+            window.removeEventListener('mousemove', transtlate, false);
+            window.removeEventListener('mouseup', stopTranstlate, false);
+        }
+        return element;
     }
-
 
 
     async loadVideo(data?: any){
@@ -152,7 +185,10 @@ export class OzoneEditVideo extends Polymer.Element{
             //const url = mediaUrl.getVideoUrl();
             const url = "http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4"
             var aMarker = new myClapprMarkersPlugin.CropMarker(80,10);
-            aMarker._$marker = this.$.element;
+            aMarker._$marker = this.buildMarker();
+
+            var bMarker = new myClapprMarkersPlugin.CropMarker(10,10);
+            bMarker._$marker = this.buildMarker();
 
             this.player = new (ClapprWrapper as ClapprType).Player({
                 source: url,
@@ -163,6 +199,7 @@ export class OzoneEditVideo extends Polymer.Element{
                 markersPlugin: {
                     markers: [
                         aMarker,
+                        bMarker,
                     ],
                 }
             });
@@ -185,11 +222,13 @@ export class OzoneEditVideo extends Polymer.Element{
             };
 
             this.$.add.onclick = () => {
-                markersPlugin.addMarker(new myClapprMarkersPlugin.CropMarker(10,10));
+                var cMarker = new myClapprMarkersPlugin.CropMarker(50,10)
+                cMarker._$marker = this.buildMarker();
+                markersPlugin.addMarker(cMarker);
             };
 
             this.$.remove.onclick = () => {
-                //markersPlugin.removeMarker(aMarker);
+                markersPlugin.removeMarker(aMarker);
             };
             this.$.clear.onclick = () => {
                 markersPlugin.clearMarkers();
