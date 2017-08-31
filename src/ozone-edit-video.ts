@@ -117,7 +117,7 @@ export class OzoneEditVideo extends Polymer.Element{
         function Resize(e: MouseEvent)
         {
             e.stopPropagation();
-            const movePx = (e.clientX - element.offsetLeft)
+            const movePx = (e.clientX - element.offsetLeft);
             const parentElement = element.parentElement as HTMLElement;
             const movePc = (movePx / parentElement.clientWidth) * 100;
 
@@ -140,7 +140,7 @@ export class OzoneEditVideo extends Polymer.Element{
         function ResizeLeft(e: MouseEvent)
         {
             e.stopPropagation();
-            let left = parseFloat(element.style.left || '')
+            let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
                 left = 0;
             }
@@ -169,7 +169,7 @@ export class OzoneEditVideo extends Polymer.Element{
         function transtlate(e: MouseEvent )
         {
             e.stopPropagation();
-            let left = parseFloat(element.style.left || '')
+            let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
                 left = 0;
             }
