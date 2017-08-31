@@ -123,7 +123,8 @@ export class OzoneEditVideo extends Polymer.Element{
             const movePc = (movePx / parentElement.clientWidth) * 100;
 
             element.style.left = left + movePc + '%';
-            element.style.width =  parseFloat(element.style.width || '') +  movePc + '%';
+            //console.log('element.style.width', element.style.width, movePc)
+            //element.style.width =  parseFloat(element.style.width || '') +  movePc + '%';
         }
         function stopResize(e: Event)
         {
@@ -174,7 +175,6 @@ export class OzoneEditVideo extends Polymer.Element{
             this.set('isVideo', true);
 
             var markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
-            debugger
 
 
             this.$.save.onclick = () => {
