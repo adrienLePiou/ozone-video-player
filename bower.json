@@ -3,7 +3,7 @@
   "main": "dist/index.html",
   "dependencies": {
     "polymer": "^2.0.2",
-    "taktik-clappr-wrapper": "taktik/taktik-clappr-wrapper",
+    "taktik-clappr-wrapper": "taktik/taktik-clappr-wrapper#webpack",
     "clappr-markers-plugin": "hubjac1/clappr-markers-plugin#^0.6.3"
   },
   "devDependencies": {

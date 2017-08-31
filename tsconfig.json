@@ -28,9 +28,6 @@
       ],
       "taktik-polymer-typeScript": [
         "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
-      ],
-      "taktik-clappr-wrapper": [
-        "./bower_components/taktik-clappr-wrapper/taktik-clappr-wrapper"
       ]
       }
     },
