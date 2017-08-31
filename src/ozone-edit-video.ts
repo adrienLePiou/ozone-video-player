@@ -48,6 +48,8 @@ export class OzoneEditVideo extends Polymer.Element{
      */
     player: ClapprPlayer | undefined;
 
+    videoUrl: string;
+
 
 
     static get properties() {
@@ -55,6 +57,9 @@ export class OzoneEditVideo extends Polymer.Element{
             player: {
                 type: Object,
                 value: false,
+            },
+            videoUrl: {
+                type: String
             },
         }
     }
@@ -100,8 +105,8 @@ export class OzoneEditVideo extends Polymer.Element{
         }, false);
 
         function updateMarker(){
-            aMarker._updateDurationValueFromCss();
-            aMarker._updateTimeFromCss();
+            aMarker.getDuration();
+            aMarker.getTime();
         }
         function initResize(e: Event)
         {
@@ -192,7 +197,8 @@ export class OzoneEditVideo extends Polymer.Element{
         if(ClapprWrapper) {
             //const mediaUrl = new MediaUrl(data.id as string, this.ozoneTypeApi.config);
             //const url = mediaUrl.getVideoUrl();
-            const url = "http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4"
+            const url = this.videoUrl;
+            console.log('url', url)
             var aMarker = this.buildMarker(80,10);
 
             var bMarker = this.buildMarker(10,10);
