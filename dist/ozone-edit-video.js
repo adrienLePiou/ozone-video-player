@@ -11877,18 +11877,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             const _super = name => super[name];
             return __awaiter(this, void 0, void 0, function* () {
                 _super("ready").call(this);
-                this.config = yield (getOzoneConfig().configPromise);
-                this.loadVideo();
+                this.config = getOzoneConfig();
             });
         }
-        loadVideo(data) {
+        loadOzoneVideo(data) {
             return __awaiter(this, void 0, void 0, function* () {
+                const config = yield (this.config.configPromise);
                 const ClapprWrapper = taktik_clappr_wrapper_1.getPlayer();
                 if (ClapprWrapper && data) {
-                    const mediaUrl = new ozone_media_url_1.MediaUrl(data.id, this.config);
+                    const mediaUrl = new ozone_media_url_1.MediaUrl(data.id, config);
                     const url = mediaUrl.getVideoUrl();
                     const previewImage = mediaUrl.getPreviewUrl(ozone_media_url_1.OzonePreviewSize.Small);
-                    console.log('url', url);
                     this.player = new ClapprWrapper.Player({
                         source: url,
                         poster: previewImage,
@@ -11904,7 +11903,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             return __awaiter(this, void 0, void 0, function* () {
                 const ClapprWrapper = taktik_clappr_wrapper_1.getPlayer();
                 if (ClapprWrapper) {
-                    console.log('url', url);
                     this.player = new ClapprWrapper.Player({
                         source: url,
                     });

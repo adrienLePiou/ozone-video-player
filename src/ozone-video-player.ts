@@ -37,7 +37,7 @@ export class OzoneEditVideo extends Polymer.Element{
 
     videoUrl: string;
 
-    config: ConfigType;
+    config: {configPromise: Promise<ConfigType>};
 
     /**
      * hide element and pause the player.
@@ -66,20 +66,17 @@ export class OzoneEditVideo extends Polymer.Element{
     async ready() {
         super.ready();
 
-        this.config = await (getOzoneConfig().configPromise);
-
-        this.loadVideo()
+        this.config = getOzoneConfig();
     }
 
 
-    async loadVideo(data?: Video){
-
+    public async loadOzoneVideo(data?: Video){
+        const config = await (this.config.configPromise);
         const ClapprWrapper = getPlayer();
         if(ClapprWrapper && data) {
-            const mediaUrl = new MediaUrl(data.id as string, this.config);
+            const mediaUrl = new MediaUrl(data.id as string, config);
             const url = mediaUrl.getVideoUrl();
             const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small)
-            console.log('url', url)
 
             this.player = new (ClapprWrapper as ClapprType).Player({
                 source: url,
@@ -97,9 +94,6 @@ export class OzoneEditVideo extends Polymer.Element{
 
         const ClapprWrapper = getPlayer();
         if(ClapprWrapper) {
-
-            console.log('url', url)
-
             this.player = new (ClapprWrapper as ClapprType).Player({
                 source: url,
             });
@@ -107,7 +101,6 @@ export class OzoneEditVideo extends Polymer.Element{
             var playerElement = document.createElement('div');
             this.$.player.appendChild(playerElement);
             this.player.attachTo(playerElement);
-
         }
     }
 
