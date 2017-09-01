@@ -1,5 +1,10 @@
 
 <script type="text/javascript" src="../bower_components/clappr-markers-plugin/dist/clappr-markers-plugin.js"></script>
+<script>
+    import * as Clappr from 'Clappr'
+    //TODO move this to taktik-clappr-wrapper
+    window.Clappr = Clappr;
+</script>
 <dom-module id="ozone-video-player">
   <template>
     <style>
@@ -8,9 +13,3 @@
 
   </template>
 </dom-module>
-<script>
-    import * as Clappr from 'Clappr'
-    //TODO move this to taktik-clappr-wrappr
-    window.Clappr = Clappr;
-  console.log('hello', Clappr)
-</script>

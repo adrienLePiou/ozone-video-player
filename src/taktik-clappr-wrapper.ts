@@ -7,7 +7,7 @@ declare var Clappr: ClapprType | undefined ;
  * return Clapper player
  * @return {ClapprType|any}
  */
-export function getPlayer(): ClapprType | undefined{
+export function getClappr(): ClapprType | undefined{
     let clapperCopy: ClapprType | undefined;
     try {
         clapperCopy = Clappr;

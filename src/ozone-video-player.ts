@@ -6,8 +6,10 @@ import 'taktik-polymer-typeScript/type';
 import {customElement} from 'taktik-polymer-typeScript'
 
 import {MediaUrl, OzonePreviewSize, SizeEnum} from './ozone-media-url'
-import {getPlayer, ClapprType, ClapprPlayer, ClapprParam} from './taktik-clappr-wrapper'
+import {getClappr, ClapprType, ClapprPlayer, ClapprParam} from './taktik-clappr-wrapper'
 import {Video} from 'ozone-type'
+
+
 
 /**
  * <ozone-video-player>
@@ -34,6 +36,8 @@ export class ozoneVideoPlayer extends Polymer.Element{
      * hide element and pause the player.
      */
     public hidden: boolean;
+
+    private MediaUrl= MediaUrl; //Exposed for testing purpose
 
 
 
@@ -74,7 +78,7 @@ export class ozoneVideoPlayer extends Polymer.Element{
         const config = await (this.config.configPromise);
 
         if(data) {
-            const mediaUrl = new MediaUrl(data.id as string, config);
+            const mediaUrl = new this.MediaUrl(data.id as string, config);
             const url = mediaUrl.getVideoUrl();
             const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small);
 
@@ -102,7 +106,7 @@ export class ozoneVideoPlayer extends Polymer.Element{
     }
 
     createPlayer(param: ClapprParam){
-        const ClapprWrapper = getPlayer();
+        const ClapprWrapper = getClappr();
         if(ClapprWrapper) {
             this.player = new (ClapprWrapper as ClapprType).Player(param);
             var playerElement = document.createElement('div');

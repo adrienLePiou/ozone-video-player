@@ -1,52 +1,57 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>ozone-video-player test</title>
+  <title>ozone-video-player test</title>
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../dist/index.html">
-  </head>
-  <body>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
 
-    <test-fixture id="BasicTestFixture">
-      <template>
-        <ozone-video-player></ozone-video-player>
-      </template>
-    </test-fixture>
+  <link rel="import" href="../dist/index.html">
+</head>
+<body>
+<fake-ozone-config id="ozoneConfig"></fake-ozone-config>
+<test-fixture id="BasicTestFixture">
+  <template>
+    <ozone-video-player></ozone-video-player>
+  </template>
+</test-fixture>
 
-    <test-fixture id="ChangedPropertyTestFixture">
-      <template>
-        <ozone-video-player prop1="new-prop1"></ozone-video-player>
-      </template>
-    </test-fixture>
+<script>
+    describe('ozone-video-player', function() {
 
-    <script>
-      suite('ozone-video-player', function() {
 
-        test('instantiating the element with default properties works', function() {
-          var element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'ozone-video-player');
-          var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello ozone-video-player!');
+        it('should display video on video-url attribute change', function(done) {
+            var element = fixture('BasicTestFixture');
+            element.set('videoUrl', 'http://download.blender.org/peach/trailer/trailer_1080p.ogg');
+            assert.lengthOf(element.root.querySelectorAll('video'), 1)
+            done()
+        });
+        describe('loadOzoneVideo', function() {
+            it('should Play a video from ozone ', function(done) {
+                // Create a test fixture
+                var element = fixture('BasicTestFixture');
+                element.config = {configPromise: Promise.resolve()};
+
+                element.MediaUrl.prototype.getVideoUrl = sinon.stub()
+                element.MediaUrl.prototype.getVideoUrl.withArgs().returns('http://download.blender.org/peach/trailer/trailer_1080p.ogg');
+                element.MediaUrl.prototype.getPreviewUrl = sinon.stub()
+                element.MediaUrl.prototype.getPreviewUrl.withArgs(250).returns('big_buck_bunny.jpeg');
+                element.loadOzoneVideo({id: 'any'});
+                setTimeout(()=> {
+                    assert.lengthOf(element.root.querySelectorAll('video'), 1)
+                    assert.lengthOf(element.root.querySelectorAll('[style*="background-image"]'), 1)
+                    done()
+                }, 0)
+            });
+
         });
 
-        test('setting a property on the element works', function() {
-          // Create a test fixture
-          var element = fixture('ChangedPropertyTestFixture');
-          assert.equal(element.prop1, 'new-prop1');
-          var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
-        });
+    });
+</script>
 
-      });
-    </script>
-
-  </body>
+</body>
 </html>
