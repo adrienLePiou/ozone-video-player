@@ -24,9 +24,11 @@ module.exports = {
     // the property we’ll need to tell it to look there in addition to the
     // bower_components folder.
     resolve: {
+        alias: { Clappr: 'clappr' },
         modules: [
             path.resolve(__dirname, 'node_modules'),
-            path.resolve(__dirname, 'bower_components')
+            path.resolve(__dirname, 'bower_components'),
+            path.resolve(__dirname, 'bower_components/clappr/src')
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx']
     },

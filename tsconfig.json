@@ -26,20 +26,18 @@
       "ozone-type": [
         "./bower_components/ozone-type/ozone/include"
       ],
-      "taktik-clappr-wrapper": [
-        "./bower_components/taktik-clappr-wrapper/src/taktik-clappr-wrapper"
-      ],
       "taktik-polymer-typeScript": [
         "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
       ],
-      "ozone-media-url": [
-        "./src/ozone-media-url"
+      "Clappr" : [
+        "./bower_components/clappr/src/main"
       ]
-      }
     },
+    "outDir": "./build"
+  },
   "include": [
     "types",
-    "src/ozone-video-player.ts",
+    "src/*",
     "./node_modules/taktik-polymer-typeScript/type/*",
     "./bower_components/ozone-config/ozone-config.ts"
   ],
@@ -47,4 +45,5 @@
     "dist",
     "build"
   ]
+
 }
