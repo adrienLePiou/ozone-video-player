@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/taktik/ozone-video-player.svg?branch=master)](https://travis-ci.org/taktik/ozone-video-player)
+
 # \<ozone-video-player\>
 
 WebComponent that play video from Ozone.
