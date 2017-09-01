@@ -20,8 +20,7 @@ module.exports = {
     // bower_components folder.
     resolve: {
         alias: {
-            Clappr: 'clappr',
-           'ozone-media-url': 'ozone-media-url/dist'
+            Clappr: 'clappr'
         },
         modules: [
             path.resolve(__dirname, 'node_modules'),
@@ -76,9 +75,6 @@ module.exports = {
         // That's important because the custom-elements-es5-adapter.js MUST
         // remain in ES2015. We’ll talk about this a bit later :)
         new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, 'src/ozone-video-player.ts'),
-            to: 'index.ts'
-        },{
             from: path.resolve(__dirname, 'bower_components/webcomponentsjs/*.js'),
             to: 'bower_components/webcomponentsjs/[name].[ext]'
         }]),
