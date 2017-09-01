@@ -4,19 +4,14 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var Clean = require('clean-webpack-plugin');
 var path = require('path');
-/*
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const extractSass = new ExtractTextPlugin({
-    filename: "[name].[contenthash].css",
-});
-*/
+
 
 module.exports = {
     // Tell Webpack which file kicks off our app.
     entry: path.resolve(__dirname, 'index.js'),
     // Tell Weback to output our bundle to ./dist/bundle.js
     output: {
-        filename: 'ozone-video-player.js',
+        filename: 'index.js',
         path: path.resolve(__dirname, 'dist')
     },
     // Tell Webpack which directories to look in to resolve import statements.
@@ -24,7 +19,10 @@ module.exports = {
     // the property we’ll need to tell it to look there in addition to the
     // bower_components folder.
     resolve: {
-        alias: { Clappr: 'clappr' },
+        alias: {
+            Clappr: 'clappr',
+           'ozone-media-url': 'ozone-media-url/dist'
+        },
         modules: [
             path.resolve(__dirname, 'node_modules'),
             path.resolve(__dirname, 'bower_components'),
@@ -57,22 +55,7 @@ module.exports = {
             {
                 test: /\.ts$/,
                 use: 'ts-loader',
-            },/*
-            {
-                test: /\.sass/,
-                use: extractSass.extract({
-                    use: [{
-                        loader: "css-loader"
-                    }, {
-                        loader: "sass-loader",
-                        options: {
-                            includePaths: [path.resolve(__dirname, "./node_modules/compass-mixins/lib")]
-                        }
-                    }],
-                    // use style-loader in development
-                    fallback: "style-loader"
-                }),
-            }*/
+            },
         ]
     },
     // Enable the Webpack dev server which will build, serve, and reload our
@@ -93,10 +76,12 @@ module.exports = {
         // That's important because the custom-elements-es5-adapter.js MUST
         // remain in ES2015. We’ll talk about this a bit later :)
         new CopyWebpackPlugin([{
+            from: path.resolve(__dirname, 'src/ozone-video-player.ts'),
+            to: 'index.ts'
+        },{
             from: path.resolve(__dirname, 'bower_components/webcomponentsjs/*.js'),
             to: 'bower_components/webcomponentsjs/[name].[ext]'
         }]),
         new Clean(['dist']),
-        //extractSass,
     ]
 };

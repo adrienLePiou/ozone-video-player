@@ -11,7 +11,8 @@
     "build": "webpack --progress",
     "verify": "git diff --exit-code",
     "start": "webpack --config webpack.config.js",
-    "watch": "webpack --config webpack.config.js --watch"
+    "watch": "webpack --config webpack.config.js --watch",
+    "doc": "typedoc  --out  doc/"
   },
   "keywords": [],
   "author": "",

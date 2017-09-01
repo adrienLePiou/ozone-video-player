@@ -27,7 +27,10 @@
         "./bower_components/ozone-type/ozone/include"
       ],
       "taktik-polymer-typeScript": [
-        "./node_modules/taktik-polymer-typeScript/taktik-polymer-typeScript"
+        "./bower_components/taktik-polymer-typeScript/taktik-polymer-typeScript"
+      ],
+      "ozone-media-url": [
+        "./bower_components/ozone-media-url/dist/src/ozone-media-url"
       ],
       "Clappr" : [
         "./bower_components/clappr/src/main"

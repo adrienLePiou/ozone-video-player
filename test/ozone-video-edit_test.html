@@ -36,10 +36,10 @@
                 var element = fixture('BasicTestFixture');
                 element.config = {configPromise: Promise.resolve()};
 
-                element.MediaUrl.prototype.getVideoUrl = sinon.stub()
-                element.MediaUrl.prototype.getVideoUrl.withArgs().returns('http://download.blender.org/peach/trailer/trailer_1080p.ogg');
-                element.MediaUrl.prototype.getPreviewUrl = sinon.stub()
-                element.MediaUrl.prototype.getPreviewUrl.withArgs(250).returns('big_buck_bunny.jpeg');
+                element.OzoneMediaUrl.prototype.getVideoUrl = sinon.stub()
+                element.OzoneMediaUrl.prototype.getVideoUrl.withArgs().returns('http://download.blender.org/peach/trailer/trailer_1080p.ogg');
+                element.OzoneMediaUrl.prototype.getPreviewUrl = sinon.stub()
+                element.OzoneMediaUrl.prototype.getPreviewUrl.withArgs(250).returns('big_buck_bunny.jpeg');
                 element.loadOzoneVideo({id: 'any'});
                 setTimeout(()=> {
                     assert.lengthOf(element.root.querySelectorAll('video'), 1)

@@ -5,7 +5,8 @@ import '../bower_components/ozone-config/ozone-config.html';
 import 'taktik-polymer-typeScript/type';
 import {customElement} from 'taktik-polymer-typeScript'
 
-import {MediaUrl, OzonePreviewSize, SizeEnum} from './ozone-media-url'
+
+import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {getClappr, ClapprType, ClapprPlayer, ClapprParam} from './taktik-clappr-wrapper'
 import {Video} from 'ozone-type'
 
@@ -37,7 +38,7 @@ export class ozoneVideoPlayer extends Polymer.Element{
      */
     public hidden: boolean;
 
-    private MediaUrl= MediaUrl; //Exposed for testing purpose
+    private OzoneMediaUrl= OzoneMediaUrl; //Exposed for testing purpose
 
 
 
@@ -78,7 +79,7 @@ export class ozoneVideoPlayer extends Polymer.Element{
         const config = await (this.config.configPromise);
 
         if(data) {
-            const mediaUrl = new this.MediaUrl(data.id as string, config);
+            const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
             const url = mediaUrl.getVideoUrl();
             const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small);
 

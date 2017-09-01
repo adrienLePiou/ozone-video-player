@@ -4,8 +4,9 @@
   "dependencies": {
     "polymer": "^2.0.2",
     "clappr-markers-plugin": "hubjac1/clappr-markers-plugin#^0.6.3",
-    "ozone-media-url": "taktik/ozone-media-url",
-    "clappr": "^0.2.73"
+    "ozone-media-url": "taktik/ozone-media-url#webpack",
+    "clappr": "^0.2.73",
+    "taktik-polymer-typeScript": "taktik/taktik-polymer-typeScript#webpack"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
@@ -13,6 +14,8 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
   },
   "resolutions": {
-    "polymer": "^2.0.0"
+    "polymer": "^2.0.0",
+    "ozone-media-url": "webpack",
+    "taktik-polymer-typeScript": "webpack"
   }
 }

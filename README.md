@@ -10,10 +10,9 @@ Install form github
 
 bower install  taktik/ozone-video-player --save
 
-Then include the element in your javaScrip with clappr
+Then include the element in your javaScrip
 
 ```html
-<script type="text/javascript" src="bower_components/clappr/dist/clappr.js"></script>
 <script type="text/javascript" src="bower_components/ozone-video-player/dist/ozone-video-player.js"></script></body>
 
 <ozone-video-player></ozone-video-player>
@@ -107,9 +106,20 @@ index.html
 > Install you dependency
 > bower install --save taktik/ozone-video-player
 
-- step 2: import where you need
-```typescript
-import 'my-template' // import webComponent
-import {MyTemplate} from '../bower_components/ozone-video-player/src/ozone-video-player' // import type
+- step 2: Configure you project
+
+add type refetrence in tsconfig.json
+```
+compilerOptions.path:{
+      "ozone-video-player": [
+        "./bower_components/ozone-video-player/dist/src/ozone-video-player"
+      ]
 ```
 
+Add alias in webpack.conf.js
+```
+resolve: {
+        alias: {
+           'ozone-video-player': 'ozone-video-player/dist'
+        },
+```
