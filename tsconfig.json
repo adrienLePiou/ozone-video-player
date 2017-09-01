@@ -30,7 +30,7 @@
         "./bower_components/taktik-polymer-typeScript/taktik-polymer-typeScript"
       ],
       "ozone-media-url": [
-        "./bower_components/ozone-media-url/dist/src/ozone-media-url"
+        "./bower_components/ozone-media-url/src/ozone-media-url"
       ],
       "Clappr" : [
         "./bower_components/clappr/src/main"
@@ -42,11 +42,11 @@
     "types",
     "src/*",
     "./node_modules/taktik-polymer-typeScript/type/*",
-    "./bower_components/ozone-config/ozone-config.ts"
+    "./bower_components/ozone-config/ozone-config.ts",
+    "./bower_components/ozone-media-url/src/*"
   ],
   "exclude": [
     "dist",
     "build"
   ]
-
 }

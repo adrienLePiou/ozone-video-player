@@ -1,17 +1,11 @@
 <?xml version="1.0"?>
 <testsuites>
-	<testsuite errors="0" failures="1" name="test/ozone-video-edit_test.html (chrome 60)" skipped="0" tests="2">
-		<testcase name="ozone-video-player; should display video on video-url attribute change" time="124"/>
-		<testcase name="ozone-video-player; loadOzoneVideo; should Play a video from ozone " time="10">
-			<failure message="Cannot read property &#x27;prototype&#x27; of undefined">Cannot read property 'prototype' of undefined
-  Context.&lt;anonymous&gt; at ozone-video-edit_test.html:39</failure>
-		</testcase>
+	<testsuite errors="0" failures="0" name="test/ozone-video-edit_test.html (chrome 58)" skipped="0" tests="2">
+		<testcase name="ozone-video-player; should display video on video-url attribute change" time="55"/>
+		<testcase name="ozone-video-player; loadOzoneVideo; should Play a video from ozone " time="64"/>
 	</testsuite>
-	<testsuite errors="0" failures="1" name="test/ozone-video-edit_test.html (firefox 54)" skipped="0" tests="2">
-		<testcase name="ozone-video-player; should display video on video-url attribute change" time="201"/>
-		<testcase name="ozone-video-player; loadOzoneVideo; should Play a video from ozone " time="4">
-			<failure message="element.MediaUrl is undefined">element.MediaUrl is undefined
-  &lt;unknown&gt; at ozone-video-edit_test.html:39</failure>
-		</testcase>
+	<testsuite errors="0" failures="0" name="test/ozone-video-edit_test.html (firefox 55)" skipped="0" tests="2">
+		<testcase name="ozone-video-player; should display video on video-url attribute change" time="89"/>
+		<testcase name="ozone-video-player; loadOzoneVideo; should Play a video from ozone " time="61"/>
 	</testsuite>
 </testsuites>
