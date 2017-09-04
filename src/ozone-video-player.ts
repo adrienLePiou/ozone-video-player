@@ -1,8 +1,7 @@
 import "polymer/polymer.html"
 
 import './ozone-video-player.html';
-import '../bower_components/ozone-config/ozone-config.html';
-import 'taktik-polymer-typeScript/type';
+import 'ozone-config/ozone-config.html';
 import {customElement} from 'taktik-polymer-typeScript'
 
 
@@ -16,7 +15,7 @@ import {Video} from 'ozone-type'
  * <ozone-video-player>
  */
 @customElement('ozone-video-player')
-export class ozoneVideoPlayer extends Polymer.Element{
+export class OzoneVideoPlayer extends Polymer.Element{
 
     /**
      * Clappr player element
@@ -27,6 +26,11 @@ export class ozoneVideoPlayer extends Polymer.Element{
      * Url to play a video directly
      */
     public videoUrl: string;
+
+    /**
+     * Ozone video to play
+     */
+    public video: Video;
 
     /**
      * Reference to ozone configuration
@@ -57,6 +61,10 @@ export class ozoneVideoPlayer extends Polymer.Element{
                 type: String,
                 observer: 'videoUrlChange'
             },
+            video:{
+                type: Object,
+                observer: 'videoChange'
+            },
         }
     }
 
@@ -80,7 +88,7 @@ export class ozoneVideoPlayer extends Polymer.Element{
 
         if(data) {
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
-            const url = mediaUrl.getVideoUrl();
+            const url = mediaUrl.getVideoUrlMp4();
             const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small);
 
             const param: ClapprParam = {
@@ -127,7 +135,16 @@ export class ozoneVideoPlayer extends Polymer.Element{
             this.loadVideoUrl(url);
         }
     }
+    private videoChange(video? : Video){
+        if (video){
+            this.loadOzoneVideo(video);
+        }
+    }
 
-
+    public destroy():void{
+        if(this.player){
+            this.player.destroy();
+        }
+    }
 }
 
