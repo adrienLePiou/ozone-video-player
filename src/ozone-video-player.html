@@ -1,9 +1,15 @@
 
 <script type="text/javascript" src="../../../bower_components/clappr-markers-plugin/dist/clappr-markers-plugin.js"></script>
+
 <script>
-    import * as Clappr from 'Clappr'
+    import * as Clappr from '../../../data/clappr.js'
     //TODO move this to taktik-clappr-wrapper
     window.Clappr = Clappr;
+    import * as Rtmp from 'clappr-rtmp-plugin/dist/rtmp.js'
+
+    export const RTMP = Rtmp;
+
+    window.RTMP = RTMP
 </script>
 <dom-module id="ozone-video-player">
   <template>

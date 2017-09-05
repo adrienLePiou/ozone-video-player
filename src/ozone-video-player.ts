@@ -6,10 +6,8 @@ import {customElement} from 'taktik-polymer-typeScript'
 
 
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
-import {getClappr, ClapprType, ClapprPlayer, ClapprParam} from './taktik-clappr-wrapper'
+import {getClappr, ClapprType, ClapprPlayer, ClapprParam, getClapprRtmp} from './taktik-clappr-wrapper'
 import {Video} from 'ozone-type'
-
-
 
 /**
  * <ozone-video-player>
@@ -41,6 +39,39 @@ export class OzoneVideoPlayer extends Polymer.Element{
      * hide element and pause the player.
      */
     public hidden: boolean;
+
+    /**
+     * default parameters apply to Clapper Player
+     */
+    public defaultClapprParameters: ClapprParam = {
+
+        plugins: {'playback': [getClapprRtmp()]},
+        rtmpConfig: {
+            scaling:'stretch',
+            playbackType: 'live',
+            bufferTime: 1,
+            startLevel: 0,
+            switchRules: {
+                "SufficientBandwidthRule": {
+                    "bandwidthSafetyMultiple": 1.15,
+                    "minDroppedFps": 2
+                },
+                "InsufficientBufferRule": {
+                    "minBufferLength": 2
+                },
+                "DroppedFramesRule": {
+                    "downSwitchByOne": 10,
+                    "downSwitchByTwo": 20,
+                    "downSwitchToZero": 24
+                },
+                "InsufficientBandwidthRule": {
+                    "bitrateMultiplier": 1.15
+                }
+            }
+        },
+        //mimeType : "application/vnd.apple.mpegurl",
+
+    };
 
     private OzoneMediaUrl= OzoneMediaUrl; //Exposed for testing purpose
 
@@ -88,13 +119,13 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         if(data) {
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
-            const url = mediaUrl.getVideoUrlMp4();
+            const url = mediaUrl.getVideoUrl();
             const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small);
 
-            const param: ClapprParam = {
+            const param: ClapprParam = Object.assign({
                 source: url,
-                poster: previewImage,
-            };
+                poster: previewImage
+            }, this.defaultClapprParameters);
 
             this.createPlayer(param);
         }
@@ -108,9 +139,10 @@ export class OzoneVideoPlayer extends Polymer.Element{
      * @return {Promise<void>}
      */
     public async loadVideoUrl(url: string){
-        const param: ClapprParam = {
+
+        const param: ClapprParam = Object.assign({
             source: url,
-        };
+        }, this.defaultClapprParameters);
         this.createPlayer(param);
     }
 
