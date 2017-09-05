@@ -5,17 +5,16 @@ declare var ClapprMarkersPlugin: MarkersPluginType | undefined ;
  * return ClapprMarkersPlugin
  * @return {MarkersPluginType|any}
  */
-export function getClapprMarkersPlugin(): MarkersPluginType | undefined{
-    let pluginCopy: MarkersPluginType | undefined;
-    try {
-        pluginCopy = ClapprMarkersPlugin;
-
+export function getClapprMarkersPlugin(): MarkersPluginType {
+    if (ClapprMarkersPlugin) {
         console.log('ClapprMarkersPlugin OK')
-    } catch (err) {
-        pluginCopy = undefined;
+        return ClapprMarkersPlugin
+
+    }else {
+
         console.log('ClapprMarkersPlugin not found')
+        throw new Error('ClapprMarkersPlugin not found')
     }
-    return pluginCopy
 }
 
 

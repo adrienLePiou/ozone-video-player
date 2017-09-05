@@ -7,8 +7,14 @@ import {customElement} from 'taktik-polymer-typeScript'
 
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {getClappr, ClapprType, ClapprPlayer, ClapprParam, getClapprRtmp} from './taktik-clappr-wrapper'
+import {getClapprMarkersPlugin, MarkersPluginType, CropMarker} from './clappr-markers-plugin-wrapper'
 import {Video} from 'ozone-type'
 
+
+export type MarkerOnVideo = {
+    time: number,
+    duration: number,
+}
 /**
  * <ozone-video-player>
  */
@@ -45,7 +51,11 @@ export class OzoneVideoPlayer extends Polymer.Element{
      */
     public defaultClapprParameters: ClapprParam = {
 
-        plugins: {'playback': [getClapprRtmp()]},
+        plugins: {
+            playback: [getClapprRtmp()],
+            core: [getClapprMarkersPlugin()],
+        },
+        parentId: "#player",
         rtmpConfig: {
             scaling:'stretch',
             playbackType: 'live',
@@ -69,13 +79,20 @@ export class OzoneVideoPlayer extends Polymer.Element{
                 }
             }
         },
+        markersPlugin: {
+            markers: [],
+        }
         //mimeType : "application/vnd.apple.mpegurl",
-
     };
 
     private OzoneMediaUrl= OzoneMediaUrl; //Exposed for testing purpose
 
+    markers: Array<MarkerOnVideo>;
 
+
+    $:{
+        player: HTMLElement
+    };
 
     static get properties() {
         return {
@@ -96,7 +113,17 @@ export class OzoneVideoPlayer extends Polymer.Element{
                 type: Object,
                 observer: 'videoChange'
             },
+            markers:{
+                type:Array,
+                notify: true,
+                observer: 'markersChange',
+                value:()=> [],
+            }
         }
+    }
+
+    markersChange(){
+        console.log(this.markers)
     }
 
     /**
@@ -178,5 +205,152 @@ export class OzoneVideoPlayer extends Polymer.Element{
             this.player.destroy();
         }
     }
+
+    buildMarker(marker: MarkerOnVideo): CropMarker{
+        const myClapprMarkersPlugin =  getClapprMarkersPlugin();
+        var aMarker = new myClapprMarkersPlugin.CropMarker(marker.time, marker.duration);
+
+        //const element = this.$.element;
+        const element = document.createElement('div');
+
+        //this.element.classList.add('crop-marker');
+        //const element = document.createElement('div');
+
+        element.className = 'element';
+
+        //this.$.container.appendChild(element)
+
+        var resizer = document.createElement('div');
+        resizer.className = 'resizer';
+        resizer.style.right = '0';
+
+        element.appendChild(resizer);
+        resizer.addEventListener('mousedown', (e) => {
+            initResize(e)
+        }, false);
+        var resizerL = document.createElement('div');
+        resizerL.className = 'resizer';
+        element.appendChild(resizerL);
+
+        resizerL.addEventListener('mousedown', (e) => {
+            initResizeLeft(e)
+        }, false);
+
+
+        element.addEventListener('mousedown', (e) => {
+            initTranslate(e)
+        }, false);
+
+        function updateMarker(){
+            marker.duration = aMarker.getDuration();
+            marker.time = aMarker.getTime();
+        }
+        function initResize(e: Event)
+        {
+            e.stopPropagation();
+            window.addEventListener('mousemove', Resize, false);
+            window.addEventListener('mouseup', stopResize, false);
+        }
+        function Resize(e: MouseEvent)
+        {
+            e.stopPropagation();
+            const movePx = (e.clientX - element.offsetLeft);
+            const parentElement = element.parentElement as HTMLElement;
+            const movePc = (movePx / parentElement.clientWidth) * 100;
+
+            element.style.width = movePc + '%';
+            updateMarker();
+        }
+        function stopResize(e: Event)
+        {
+            e.stopPropagation();
+            window.removeEventListener('mousemove', Resize, false);
+            window.removeEventListener('mouseup', stopResize, false);
+        }
+
+        function initResizeLeft(e: Event)
+        {
+            e.stopPropagation();
+            window.addEventListener('mousemove', ResizeLeft, false);
+            window.addEventListener('mouseup', stopResizeLeft, false);
+        }
+        function ResizeLeft(e: MouseEvent)
+        {
+            e.stopPropagation();
+            let left = parseFloat(element.style.left || '');
+            if (isNaN(left)) {
+                left = 0;
+            }
+            const movePx = (e.clientX - element.offsetLeft);
+            const parentElement = element.parentElement as HTMLElement;
+            const movePc = (movePx / parentElement.clientWidth) * 100;
+
+            element.style.left = left + movePc + '%';
+            element.style.width =  parseFloat(element.style.width || '') -  movePc + '%';
+            updateMarker();
+        }
+        function stopResizeLeft(e: Event)
+        {
+            e.stopPropagation();
+            window.removeEventListener('mousemove', ResizeLeft, false);
+            window.removeEventListener('mouseup', stopResizeLeft, false);
+        }
+
+
+        function initTranslate(e: Event)
+        {
+            e.stopPropagation();
+            window.addEventListener('mousemove', transtlate, false);
+            window.addEventListener('mouseup', stopTranstlate, false);
+        }
+        function transtlate(e: MouseEvent )
+        {
+            e.stopPropagation();
+            let left = parseFloat(element.style.left || '');
+            if (isNaN(left)) {
+                left = 0;
+            }
+            const movePx = (e.clientX - element.offsetLeft);
+            const parentElement = element.parentElement as HTMLElement;
+            const movePc = (movePx / parentElement.clientWidth) * 100;
+
+            element.style.left = left + movePc + '%';
+            updateMarker();
+        }
+        function stopTranstlate(e: Event)
+        {
+            e.stopPropagation();
+            window.removeEventListener('mousemove', transtlate, false);
+            window.removeEventListener('mouseup', stopTranstlate, false);
+        }
+        aMarker._$marker = element;
+        return aMarker;
+    }
+
+    addMarker(videoMarker: MarkerOnVideo) {
+        if (this.player) {
+            this.push('markers', videoMarker);
+            const aMarker = this.buildMarker(videoMarker);
+            const markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
+            markersPlugin.addMarker(aMarker);
+        }
+    };
+
+    removeMarker(id: number) {
+        if (this.player) {
+            const markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
+            const marker = markersPlugin.getByIndex(id);
+            markersPlugin.removeMarker(marker);
+            this.splice('markers', id, 1);
+        }
+    };
+
+    clearMarkers() {
+        if (this.player) {
+            const markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
+            markersPlugin.clearMarkers();
+            this.set('markers',[]);
+        }
+    };
 }
 

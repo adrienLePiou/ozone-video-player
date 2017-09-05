@@ -1,21 +1,39 @@
 
-<script type="text/javascript" src="../../../bower_components/clappr-markers-plugin/dist/clappr-markers-plugin.js"></script>
-
 <script>
-    import * as Clappr from '../../../data/clappr.js'
+    import * as clappr from 'Clappr'
     //TODO move this to taktik-clappr-wrapper
-    window.Clappr = Clappr;
-    import * as Rtmp from 'clappr-rtmp-plugin/dist/rtmp.js'
+    window.Clappr = clappr;
+    import * as Rtmp from '../../../bower_components/clappr-rtmp-plugin/dist/rtmp.js'
 
     export const RTMP = Rtmp;
 
     window.RTMP = RTMP
+
+
+    import * as ClapprMarkersPlugin from "../../../bower_components/clappr-markers-plugin/dist/clappr-markers-plugin.js"
+
+    window.ClapprMarkersPlugin = ClapprMarkersPlugin;
 </script>
 <dom-module id="ozone-video-player">
   <template>
     <style>
+      .element {
+        position: absolute;
+        overflow: hidden;
+        background: rgba(255,255,255,0.7);
+        min-height: 20px;
+        max-height: 20px;
+        width: 20%;
+      }
+      .resizer{
+        width: 5px;
+        height: 100%;
+        background: #2b80f3;
+        position: absolute;
+        bottom: 0;
+        cursor: se-resize;
+      }
     </style>
     <div id="player"></div>
-
   </template>
 </dom-module>

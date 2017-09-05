@@ -96,6 +96,9 @@ export interface ClapprParam {
      * width
      */
     width?: number| string,
-    plugins?: object,
+    plugins?: {
+        playback?:Array<any>,
+        core:Array<any>
+    },
     [key: string]: any,
 }
