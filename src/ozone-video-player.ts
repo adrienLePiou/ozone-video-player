@@ -98,12 +98,12 @@ export class OzoneVideoPlayer extends Polymer.Element{
         return {
             hidden: {
                 type: Boolean,
-                value: false,
+                letue: false,
                 observer: 'visibilityChange'
             },
             player: {
                 type: Object,
-                value: false,
+                letue: false,
             },
             videoUrl: {
                 type: String,
@@ -116,14 +116,15 @@ export class OzoneVideoPlayer extends Polymer.Element{
             markers:{
                 type:Array,
                 notify: true,
-                observer: 'markersChange',
                 value:()=> [],
             }
         }
     }
+    static get observers(){
+        return ['markersChange(markers.*)'];
+    }
 
     markersChange(){
-        console.log(this.markers)
     }
 
     /**
@@ -174,6 +175,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
     }
 
     createPlayer(param: ClapprParam){
+        this.destroy();
         const ClapprWrapper = getClappr();
         if(ClapprWrapper) {
             this.player = new (ClapprWrapper as ClapprType).Player(param);
@@ -206,7 +208,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         }
     }
 
-    buildMarker(marker: MarkerOnVideo): CropMarker{
+    buildMarker(marker: MarkerOnVideo, index: number): CropMarker{
         const myClapprMarkersPlugin =  getClapprMarkersPlugin();
         var aMarker = new myClapprMarkersPlugin.CropMarker(marker.time, marker.duration);
 
@@ -241,18 +243,20 @@ export class OzoneVideoPlayer extends Polymer.Element{
             initTranslate(e)
         }, false);
 
-        function updateMarker(){
-            marker.duration = aMarker.getDuration();
-            marker.time = aMarker.getTime();
-        }
+        const updateMarker= ()=> {
+            this.set(`markers.${index}.duration`, aMarker.getDuration());
+            this.set(`markers.${index}.time`, aMarker.getTime());
+        };
         function initResize(e: Event)
         {
+            console.log('STOP initResize')
             e.stopPropagation();
             window.addEventListener('mousemove', Resize, false);
             window.addEventListener('mouseup', stopResize, false);
         }
         function Resize(e: MouseEvent)
         {
+            console.log('STOP Resize')
             e.stopPropagation();
             const movePx = (e.clientX - element.offsetLeft);
             const parentElement = element.parentElement as HTMLElement;
@@ -263,6 +267,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         }
         function stopResize(e: Event)
         {
+            console.log('STOP stopResize')
             e.stopPropagation();
             window.removeEventListener('mousemove', Resize, false);
             window.removeEventListener('mouseup', stopResize, false);
@@ -270,12 +275,14 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         function initResizeLeft(e: Event)
         {
+            console.log('STOP initResizeLeft')
             e.stopPropagation();
             window.addEventListener('mousemove', ResizeLeft, false);
             window.addEventListener('mouseup', stopResizeLeft, false);
         }
         function ResizeLeft(e: MouseEvent)
         {
+            console.log('STOP ResizeLeft')
             e.stopPropagation();
             let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
@@ -291,6 +298,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         }
         function stopResizeLeft(e: Event)
         {
+            console.log('STOP stopResizeLeft')
             e.stopPropagation();
             window.removeEventListener('mousemove', ResizeLeft, false);
             window.removeEventListener('mouseup', stopResizeLeft, false);
@@ -299,12 +307,14 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         function initTranslate(e: Event)
         {
+            console.log('STOP initTranslate')
             e.stopPropagation();
             window.addEventListener('mousemove', transtlate, false);
             window.addEventListener('mouseup', stopTranstlate, false);
         }
         function transtlate(e: MouseEvent )
         {
+            console.log('STOP transtlate')
             e.stopPropagation();
             let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
@@ -319,6 +329,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         }
         function stopTranstlate(e: Event)
         {
+            console.log('STOP stopTranstlate')
             e.stopPropagation();
             window.removeEventListener('mousemove', transtlate, false);
             window.removeEventListener('mouseup', stopTranstlate, false);
@@ -330,7 +341,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
     addMarker(videoMarker: MarkerOnVideo) {
         if (this.player) {
             this.push('markers', videoMarker);
-            const aMarker = this.buildMarker(videoMarker);
+            const aMarker = this.buildMarker(videoMarker, this.markers.length -1);
             const markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
             markersPlugin.addMarker(aMarker);
         }
@@ -352,5 +363,22 @@ export class OzoneVideoPlayer extends Polymer.Element{
             this.set('markers',[]);
         }
     };
+
+    getSelectedChunks(updateToFitHlsChunk=false):Array<Array<string>> | null{
+        if (this.player) {
+            const markersPlugin = this.player.getPlugin('markers-plugin') as MarkersPluginType;
+            return markersPlugin.getAll()
+                .map((marker, index) => {
+                    const markerC = marker as CropMarker;
+                    const selectedChunks = markerC.getHlsFragments(updateToFitHlsChunk);
+                    if(updateToFitHlsChunk) {
+                        this.set(`markers.${index}.duration`, markerC.getDuration());
+                        this.set(`markers.${index}.time`, markerC.getTime());
+                    }
+                    return selectedChunks;
+                })
+        }
+        return null;
+    }
 }
 

@@ -105,6 +105,8 @@ export declare class CropMarker extends BaseMarker {
     _updateDurationValueFromCss(): void
 
     _updateTimeFromCss(): void
+
+    getHlsFragments(updateToFitHlsChunk:boolean):Array<string>;
 }
 
 export interface MarkersPluginType {
