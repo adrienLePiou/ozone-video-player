@@ -55,7 +55,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
             playback: [getClapprRtmp()],
             core: [getClapprMarkersPlugin()],
         },
-        parentId: "#player",
+        //parentId: "#player",
         rtmpConfig: {
             scaling:'stretch',
             playbackType: 'live',
@@ -147,8 +147,8 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         if(data) {
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
-            const url = mediaUrl.getVideoUrl();
-            const previewImage = mediaUrl.getPreviewUrl(OzonePreviewSize.Small);
+            const url = await mediaUrl.getVideoUrl();
+            const previewImage = mediaUrl.getPreviewUrlJpg(OzonePreviewSize.Small);
 
             const param: ClapprParam = Object.assign({
                 source: url,
