@@ -46,7 +46,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         plugins: {
             playback: [RTMP],
-            core: [ClapprMarkersPlugin],
+            core: [ClapprMarkersPlugin, ClapprSubtitle],
         },
         //parentId: "#player",
         rtmpConfig: {
@@ -156,6 +156,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
      */
     public async loadOzoneVideo(data?: Video){
         const config = await (Config.OzoneConfig.get());
+debugger
 
         if(data) {
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
