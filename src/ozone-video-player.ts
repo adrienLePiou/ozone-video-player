@@ -10,6 +10,7 @@ import * as ClapprSubtitle from './Clappr-Subtitle'
 import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {Video} from 'ozone-type'
+import {underline} from "chalk";
 
 
 export type MarkerOnVideo = MarkerOnVideo;
@@ -46,7 +47,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
         plugins: {
             playback: [RTMP],
-            core: [ClapprMarkersPlugin, ClapprSubtitle],
+            core: [ClapprMarkersPlugin, ClapprSubtitle.ClapprSubtitle],
         },
         //parentId: "#player",
         rtmpConfig: {
@@ -74,6 +75,14 @@ export class OzoneVideoPlayer extends Polymer.Element{
         },
         markersPlugin: {
             markers: [],
+        },
+        subtitle :{
+            auto : true, // automatically loads subtitle
+            backgroundColor : 'transparent',
+            fontWeight : 'normal',
+            fontSize : '14px',
+            color: 'yellow',
+            textShadow : '1px 1px #000'
         }
         //mimeType : "application/vnd.apple.mpegurl",
     };
@@ -89,9 +98,9 @@ export class OzoneVideoPlayer extends Polymer.Element{
         return this._markerFactory;
 }
 
-    subtitlesAvailable: Array<object>;
+    subtitlesAvailable: Array<string>;
     subtitleSelected: string;
-    private _subtitles: Map<string, object>;
+    private _subtitles: Map<string, object> = new Map();
 
 
     $:{
@@ -140,14 +149,43 @@ export class OzoneVideoPlayer extends Polymer.Element{
     markersChange(){
     }
 
-    subtitleSelectedChange(subtitleSelected?:string){
-        if(subtitleSelected && this._subtitles.has(subtitleSelected)){
-
+    async subtitleSelectedChange(subtitle:string){
+        if(subtitle && this.player){
+            const config = await (Config.OzoneConfig.get());
+            const mediaUrl = new this.OzoneMediaUrl(this.video.subtitles[this.subtitleSelected] as string, config);
+            if(this.player.options.subtitle) {
+                const plugin = this.player.getPlugin('subtitle-plugin');
+                plugin.options.src = mediaUrl.getOriginalFormat()
+                plugin.initSubtitle();
+            }
         }
+
+    }
+
+    addConfigSubtitle(video:Video, config:Config.ConfigType){
+
+        if(this.subtitleSelected && this._subtitles.has(this.subtitleSelected)) {
+
+            const mediaUrl = new this.OzoneMediaUrl(video.subtitles[this.subtitleSelected] as string, config);
+            this.defaultClapprParameters.subtitle.src = mediaUrl.getOriginalFormat();
+        } else {
+
+            this.defaultClapprParameters.subtitle.src = null
+        }
+        return this.defaultClapprParameters
+
     }
     private _updateSubtitlesAvailable(video:Video ){
 
-
+        if(video.subtitles){
+            for(let s in  video.subtitles){
+                this._subtitles.set(s, video.subtitles[s])
+                this.push('subtitlesAvailable',s);
+            }
+        } else{
+            this._subtitles.clear();
+            this.set('subtitlesAvailable', [])
+        }
     }
     /**
      * Load video from Ozone.
@@ -156,17 +194,19 @@ export class OzoneVideoPlayer extends Polymer.Element{
      */
     public async loadOzoneVideo(data?: Video){
         const config = await (Config.OzoneConfig.get());
-debugger
 
         if(data) {
+            this._updateSubtitlesAvailable(data);
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
             const url = await mediaUrl.getVideoUrl();
             const previewImage = mediaUrl.getPreviewUrlJpg(OzonePreviewSize.Small);
 
+            const clapprConfig = this.addConfigSubtitle(data, config)
+
             const param: Clappr.ClapprParam = Object.assign({
                 source: url,
-                poster: previewImage
-            }, this.defaultClapprParameters);
+                poster: previewImage,
+            }, clapprConfig);
 
             this.createPlayer(param);
         }

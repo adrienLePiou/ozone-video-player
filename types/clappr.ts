@@ -17,8 +17,15 @@ declare module 'Clappr' {
         attachTo(element: Element): void
 
         getPlugin(name: string): any
+
+        options: ClapprParam
     }
 
+    export class UICorePlugin {
+        options: object
+        constructor(core:any)
+
+    }
     export const Events: {[key:string]:any};
 
     export interface ClapprParam {

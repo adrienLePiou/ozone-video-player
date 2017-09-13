@@ -13,7 +13,7 @@ export interface SubtitleParam{
 
 
 var BLOCK_REGEX = /[0-9]+(?:\r\n|\r|\n)([0-9]{2}:[0-9]{2}:[0-9]{2}(?:,|\.)[0-9]{3}) --> ([0-9]{2}:[0-9]{2}:[0-9]{2}(?:,|\.)[0-9]{3})(?:\r\n|\r|\n)((?:.*(?:\r\n|\r|\n))*?)(?:\r\n|\r|\n)/g;
-
+debugger
 export class ClapprSubtitleClass {
     core: any
     subtitles :Array<any> = []
@@ -36,11 +36,15 @@ export class ClapprSubtitleClass {
     _options: Clappr.ClapprParam;
     lastMediaControlButtonClick = new Date()
     subtitle:Array<any> = []
-
     /**
      * @constructor
      */
-    initialize () {
+
+    constructor(){
+        debugger
+    }
+    initialize: {():void} = () => {
+        debugger
 
         this.subtitles = [];
 
@@ -390,5 +394,5 @@ export class ClapprSubtitleClass {
 
 }
 
-
+debugger
 export const ClapprSubtitle = Clappr.CorePlugin.extend(ClapprSubtitleClass);
