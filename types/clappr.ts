@@ -20,6 +20,8 @@ declare module 'Clappr' {
 
         isPlaying(): void
 
+        on(event:string, action: {():void}):void
+
         options: ClapprParam
     }
 
@@ -28,7 +30,7 @@ declare module 'Clappr' {
         constructor(core:any)
 
     }
-    export const Events: {[key:string]:any};
+    export const Events: {[key:string]:string};
 
     export interface ClapprParam {
         /**

@@ -105,6 +105,10 @@ export class OzoneVideoPlayer extends Polymer.Element{
     private _subtitles: Map<string, object> = new Map();
 
 
+    private _intervalReporter?:number;
+    private _videoPlaying?: Video;
+
+
     $:{
         player: HTMLElement
     };
@@ -198,6 +202,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         const config = await (Config.OzoneConfig.get());
 
         if(data) {
+            this._videoPlaying = data;
             this._updateSubtitlesAvailable(data);
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
             const url = await mediaUrl.getVideoUrl();
@@ -213,7 +218,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
             this.createPlayer(param);
 
             this.intervalReporter = setInterval(()=>{
-                this.reportUsage(data);
+                this.reportUsage();
             }, ReportInterval_ms)
         }
     }
@@ -242,11 +247,10 @@ export class OzoneVideoPlayer extends Polymer.Element{
     private get intervalReporter ():number | undefined {
         return this._intervalReporter;
     }
-    private _intervalReporter?:number
 
-    reportUsage(video: Video){
-        if(this.player && this.player.isPlaying())
-            ozoneApiMediaplay.reportMediaUsage(video);
+    reportUsage(){
+        if(this._videoPlaying && this.player && this.player.isPlaying())
+            ozoneApiMediaplay.reportMediaUsage(this._videoPlaying);
     }
 
     createPlayer(param: Clappr.ClapprParam){
@@ -255,6 +259,10 @@ export class OzoneVideoPlayer extends Polymer.Element{
         var playerElement = document.createElement('div');
         this.$.player.appendChild(playerElement);
         this.player.attachTo(playerElement);
+
+        this.player.on(Clappr.Events.PLAYER_PLAY, ()=> {
+            this.reportUsage();
+        })
     }
 
     private visibilityChange(){
