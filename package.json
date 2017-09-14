@@ -33,6 +33,7 @@
     "polymer-webpack-loader": "^2.0.0",
     "ts-loader": "^2.3.4",
     "typescript": "^2.4.1",
+    "uuid": "^3.1.0",
     "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
     "webpack": "^3.5.5"
   },

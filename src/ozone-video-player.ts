@@ -10,6 +10,9 @@ import * as ClapprSubtitle from './Clappr-Subtitle'
 import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {Video} from 'ozone-type'
+import{ozoneApiMediaplay, ReportInterval_ms} from './ozone-api-mediaplay'
+{
+}
 
 
 export type MarkerOnVideo = MarkerOnVideo;
@@ -110,12 +113,12 @@ export class OzoneVideoPlayer extends Polymer.Element{
         return {
             hidden: {
                 type: Boolean,
-                letue: false,
+                value: false,
                 observer: 'visibilityChange'
             },
             player: {
                 type: Object,
-                letue: false,
+                value: false,
             },
             videoUrl: {
                 type: String,
@@ -208,6 +211,10 @@ export class OzoneVideoPlayer extends Polymer.Element{
             }, clapprConfig);
 
             this.createPlayer(param);
+
+            this.intervalReporter = setInterval(()=>{
+                this.reportUsage(data);
+            }, ReportInterval_ms)
         }
     }
 
@@ -224,6 +231,22 @@ export class OzoneVideoPlayer extends Polymer.Element{
             source: url,
         }, this.defaultClapprParameters);
         this.createPlayer(param);
+    }
+
+    private set intervalReporter(interval:number| undefined){
+        if (this._intervalReporter){
+            clearInterval(this._intervalReporter);
+        }
+        this._intervalReporter = interval;
+    }
+    private get intervalReporter ():number | undefined {
+        return this._intervalReporter;
+    }
+    private _intervalReporter?:number
+
+    reportUsage(video: Video){
+        if(this.player && this.player.isPlaying())
+            ozoneApiMediaplay.reportMediaUsage(video);
     }
 
     createPlayer(param: Clappr.ClapprParam){
@@ -256,6 +279,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
         if(this.player){
             this.player.destroy();
         }
+        this.intervalReporter = undefined;
     }
 
     buildMarker(marker: MarkerOnVideo, index: number): ClapprMarkersPlugin.CropMarker{

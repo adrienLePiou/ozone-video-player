@@ -18,6 +18,8 @@ declare module 'Clappr' {
 
         getPlugin(name: string): any
 
+        isPlaying(): void
+
         options: ClapprParam
     }
 
