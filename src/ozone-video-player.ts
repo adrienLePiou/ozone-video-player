@@ -10,7 +10,6 @@ import * as ClapprSubtitle from './Clappr-Subtitle'
 import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {Video} from 'ozone-type'
-import {underline} from "chalk";
 
 
 export type MarkerOnVideo = MarkerOnVideo;
