@@ -1,0 +1,15 @@
+{
+  "name": "clappr-rtmp-plugin",
+  "homepage": "https://github.com/video-dev/clappr-rtmp-plugin",
+  "version": "0.0.19",
+  "_release": "0.0.19",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.0.19",
+    "commit": "2fe6f7e5d6eec9751852ea45071b21191aeb4d3e"
+  },
+  "_source": "https://github.com/video-dev/clappr-rtmp-plugin.git",
+  "_target": "^0.0.19",
+  "_originalSource": "video-dev/clappr-rtmp-plugin",
+  "_direct": true
+}
