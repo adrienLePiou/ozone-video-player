@@ -13,6 +13,7 @@
   When we hear the 'WebComponentsReady' event from the polyfill bundle we can
   insert our 'bundle.js'.
 -->
+
 <script>
     (function() {
         document.addEventListener('WebComponentsReady', function componentsReady() {
@@ -26,12 +27,12 @@
 </script>
 <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 
+
 <!--
   IMPORTANT: Make sure you set the inject: false option in HTMLWebpackPlugin
   so it doesn't try to insert bundle.js. We're handling loading it ourselves
   up above.
 -->
-
-<ozone-video-player video-url="http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4"></ozone-video-player>
+<demo-app>no demo</demo-app>
 </body>
 </html>

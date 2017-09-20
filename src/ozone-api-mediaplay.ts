@@ -9,12 +9,13 @@ export interface MediaplayFormat {
     media:uuid,
     user: uuid,
     description?: string,
+    userAgent: string,
 }
 export const ReportInterval_ms= 60 *1000;
 const visitorId = uuid();
 export class OzoneApiMediaplay{
 
-    private recordUsage: boolean = true
+    private recordUsage: boolean = true;
 
 
     constructor(){
@@ -34,16 +35,12 @@ export class OzoneApiMediaplay{
             const report: MediaplayFormat = {
                 media: media.id,
                 user: visitorId,
-            }
+                userAgent: navigator.userAgent,
+                description: media.title,
+            };
             OzoneApiMediaplay.sendStatistic(report)
         }
-
-
     }
-
-
-
-
 }
 
 

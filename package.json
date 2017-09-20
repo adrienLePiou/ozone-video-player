@@ -12,6 +12,7 @@
     "verify": "git diff --exit-code",
     "start": "webpack --config webpack.config.js",
     "watch": "webpack --config webpack.config.js --watch",
+    "demo": "webpack-dev-server --config webpack.config.js",
     "doc": "typedoc  --out  doc/"
   },
   "keywords": [],
@@ -35,19 +36,30 @@
     "typescript": "^2.4.1",
     "uuid": "^3.1.0",
     "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
-    "webpack": "^3.5.5"
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.8.2"
   },
   "dependencies": {
+    "@polymer/polymer": "^2.1.0",
     "@types/reflect-metadata": "0.0.5",
+    "@webcomponents/shadycss": "^1.0.6",
+    "@webcomponents/webcomponentsjs": "^1.0.12",
+    "clappr": "^0.2.74",
+    "clappr-markers-plugin": "git+https://github.com/hubjac1/clappr-markers-plugin.git",
+    "clappr-rtmp": "git+https://github.com/video-dev/clappr-rtmp-plugin.git",
     "gulp": "^3.9.1",
     "gulp-browserstack": "^1.0.3",
     "gulp-typescript": "^3.2.1",
     "merge2": "^1.1.0",
+    "ozone-api-request": "^1.0.2",
+    "ozone-config": "^1.0.0",
+    "ozone-media-url": "^1.0.0",
     "reflect-metadata": "^0.1.10",
     "run-sequence": "^2.1.0",
-    "taktik-polymer-typeScript": "github:taktik/taktik-polymer-typeScript#webpack",
+    "taktik-polymer-typescript": "^2.2.0",
     "typedoc": "^0.8.0",
     "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
-    "web-component-tester": "^6.0.0"
+    "web-component-tester": "^6.0.0",
+    "webcomponents.js": "^0.7.24"
   }
 }

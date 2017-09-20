@@ -5,15 +5,14 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
 var Clean = require('clean-webpack-plugin');
 var path = require('path');
-
-const modulePath = 'elements'; //'taktik_components/ozone-video-player/';//
+console.log(path.resolve(__dirname))
 module.exports = {
     // Tell Webpack which file kicks off our app.
-    entry: path.resolve(__dirname, modulePath, 'index.js'),
+    entry: path.resolve(__dirname, 'src/index.js'),
     // Tell Weback to output our bundle to ./dist/bundle.js
     output: {
         filename: 'index.js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'build')
     },
     // Tell Webpack which directories to look in to resolve import statements.
     // Normally Webpack will look in node_modules by default but since we’re overriding
@@ -22,12 +21,13 @@ module.exports = {
     resolve: {
         alias: {
             Clappr: 'clappr',
+            "../../../shadycss/apply-shim.html": "@webcomponents/shadycss/apply-shim.html",
+            "../../../shadycss/custom-style-interface.html": "@webcomponents/shadycss/custom-style-interface.html",
         },
         modules: [
-            path.resolve(__dirname, 'taktik_components'),
             path.resolve(__dirname, 'vendor'),
+            path.resolve(__dirname, 'node_modules/@polymer'),
             path.resolve(__dirname, 'node_modules'),
-            path.resolve(__dirname, 'bower_components'),
 
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.html']
@@ -60,20 +60,13 @@ module.exports = {
             },
         ]
     },
-    // Enable the Webpack dev server which will build, serve, and reload our
-    // project on changes.
-    devServer: {
-        contentBase: path.join(__dirname, 'dist'),
-        compress: true,
-        port: 9000
-    },
     plugins: [
         // This plugin will generate an index.html file for us that can be used
         // by the Webpack dev server. We can give it a template file (written in EJS)
         // and it will handle injecting our bundle for us.
         new HtmlWebpackPlugin({
             inject: false,
-            template: path.resolve(__dirname, modulePath, 'index.ejs')
+            template: path.resolve(__dirname, 'src/demo.ejs')
         }),
         // This plugin will copy files over to ‘./dist’ without transforming them.
         // That's important because the custom-elements-es5-adapter.js MUST
@@ -86,6 +79,11 @@ module.exports = {
             from: path.resolve(__dirname, 'config/conf.ozone.json'),
             to: 'conf.ozone.json'
         }]),
-        new Clean(['dist']),
-    ]
+        new Clean(['build']),
+    ],
+    devServer: {
+        contentBase: path.join(__dirname),
+        compress: true,
+        port: 9000
+    },
 };

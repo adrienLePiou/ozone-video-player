@@ -1,8 +1,7 @@
 import "polymer/polymer.html"
-
 import './ozone-video-player.html';
 import * as Config from 'ozone-config';
-import {customElement} from 'taktik-polymer-typeScript'
+import {customElement} from 'taktik-polymer-typescript'
 import * as Clappr from 'Clappr'
 import * as RTMP from 'clappr-rtmp-plugin'
 import * as ClapprMarkersPlugin from 'clappr-markers-plugin'
@@ -11,8 +10,7 @@ import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
 import {OzoneMediaUrl, OzonePreviewSize, SizeEnum} from 'ozone-media-url'
 import {Video} from 'ozone-type'
 import{ozoneApiMediaplay, ReportInterval_ms} from './ozone-api-mediaplay'
-{
-}
+
 
 
 export type MarkerOnVideo = MarkerOnVideo;
@@ -217,9 +215,9 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
             this.createPlayer(param);
 
-            this.intervalReporter = setInterval(()=>{
+            this.intervalReporter = window.setInterval(()=>{
                 this.reportUsage();
-            }, ReportInterval_ms)
+            }, ReportInterval_ms);
         }
     }
 

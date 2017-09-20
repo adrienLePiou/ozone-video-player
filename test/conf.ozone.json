@@ -1,7 +1,7 @@
 {
   "ozoneApi": {
     "host": "/ozone",
-    "hostProxy": "http://test.admin.zasobynauki.pwr.edu.pl",
+    "hostProxy": "https://alpha.flowr.cloud/ozone",
     "endPoints": {
       "login": "/rest/v3/authentication/login/user",
       "logout": "/rest/v3/authentication/logout",
@@ -17,7 +17,8 @@
       "wait": "/rest/v2/task/wait",
       "file": "/rest/v3/items/file",
       "blob": "/rest/v3/blob",
-      "fileType": "/rest/v3/filetype"
+      "fileType": "/rest/v3/filetype",
+      "mediaplay": "/rest/v3/items/mediaplay"
     },
     "type": "/rest/v3/type/{type}",
     "view": "/view",
