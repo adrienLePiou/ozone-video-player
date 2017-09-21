@@ -1,7 +1,7 @@
 {
-  "name": "ozone-video-player",
+  "name": "testplayer",
   "description": "",
-  "main": "ozone-video-player.js",
+  "main": "index.js",
   "authors": [
     "Hubert Jacquin <hj@taktik.com>"
   ],
@@ -15,9 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "webcomponentsjs": "^1.0.12"
-  },
-  "devDependencies": {
-    "web-component-tester": "^6.2.0"
+    "webcomponentsjs": "^1.0.12",
+    "polymer": "^2.1.0"
   }
 }

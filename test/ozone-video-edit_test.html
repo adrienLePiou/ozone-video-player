@@ -7,13 +7,12 @@
   <title>ozone-video-player test</title>
 
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="../dist/index.html">
+  <script src="../build/index.js"></script>
 </head>
 <body>
-<fake-ozone-config id="ozoneConfig"></fake-ozone-config>
 <test-fixture id="BasicTestFixture">
   <template>
     <ozone-video-player></ozone-video-player>
@@ -38,8 +37,8 @@
 
                 element.OzoneMediaUrl.prototype.getVideoUrl = sinon.stub()
                 element.OzoneMediaUrl.prototype.getVideoUrl.withArgs().returns('http://download.blender.org/peach/trailer/trailer_1080p.ogg');
-                element.OzoneMediaUrl.prototype.getPreviewUrl = sinon.stub()
-                element.OzoneMediaUrl.prototype.getPreviewUrl.withArgs(250).returns('big_buck_bunny.jpeg');
+                element.OzoneMediaUrl.prototype.getPreviewUrlJpg = sinon.stub()
+                element.OzoneMediaUrl.prototype.getPreviewUrlJpg.withArgs(250).returns('big_buck_bunny.jpeg');
                 element.loadOzoneVideo({id: 'any'});
                 setTimeout(()=> {
                     assert.lengthOf(element.root.querySelectorAll('video'), 1)

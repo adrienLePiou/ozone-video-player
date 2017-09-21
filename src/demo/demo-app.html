@@ -1,0 +1,34 @@
+
+<dom-module id="demo-app">
+    <template>
+        <div>
+
+
+            <ozone-video-player
+                    id="mediaPlayer"
+                    video-url="test/data/big_buck_bunny/index.m3u8"
+                    hidden="[[!display]]"
+                    markers="{{markers}}"
+                    subtitles-available="{{subtitles}}"
+                    subtitle-selected="{{subtitleSelect}}">NO editor</ozone-video-player>
+
+            Subtitles languages
+            <select id="selectType" value="{{subtitleSelect::input}}">
+                <template is="dom-repeat" items="{{subtitles}}">
+                    <option value="[[item]]">[[item]]</option>
+                </template>
+            </select>
+            <p></p>
+            Edit video
+            <button id="addMarker"> add marker</button>
+            <button id="clear"> clear all markers</button>
+            [[markersJson]]
+
+
+            <p></p>
+            Load video
+            <button id="load"> load a video</button>
+
+        </div>
+    </template>
+</dom-module>

@@ -3,4 +3,6 @@
 /node_modules/
 /doc/
 /.idea/
-!/junitReport/test-report.xml
+/junitReport/test-report.xml
+/dist
+/coverage/
