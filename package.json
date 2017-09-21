@@ -20,7 +20,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "awesome-typescript-loader": "^3.2.3",
     "babel": "^6.23.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -34,9 +33,9 @@
     "path": "^0.12.7",
     "polymer-webpack-loader": "^2.0.0",
     "ts-loader": "^2.3.4",
+    "typedoc": "^0.8.0",
     "typescript": "^2.4.1",
-    "uuid": "^3.1.0",
-    "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
+    "web-component-tester": "^6.2.0",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.8.2"
   },
@@ -47,20 +46,12 @@
     "@webcomponents/webcomponentsjs": "^1.0.12",
     "clappr": "^0.2.74",
     "clappr-markers-plugin": "git+https://github.com/hubjac1/clappr-markers-plugin.git",
-    "clappr-rtmp": "git+https://github.com/video-dev/clappr-rtmp-plugin.git",
-    "gulp": "^3.9.1",
-    "gulp-browserstack": "^1.0.3",
-    "gulp-typescript": "^3.2.1",
-    "merge2": "^1.1.0",
     "ozone-api-request": "^1.0.2",
     "ozone-config": "^1.0.0",
     "ozone-media-url": "^1.0.0",
     "reflect-metadata": "^0.1.10",
-    "run-sequence": "^2.1.0",
     "taktik-polymer-typescript": "^2.2.0",
-    "typedoc": "^0.8.0",
-    "wct-junit-reporter": "git+https://github.com/marcelmeulemans/wct-junit-reporter.git",
-    "web-component-tester": "^6.0.0",
+    "uuid": "^3.1.0",
     "webcomponents.js": "^0.7.24"
   }
 }

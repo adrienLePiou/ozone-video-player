@@ -3,7 +3,6 @@ import './ozone-video-player.html';
 import * as Config from 'ozone-config';
 import {customElement} from 'taktik-polymer-typescript'
 import * as Clappr from 'Clappr'
-import * as RTMP from 'clappr-rtmp-plugin'
 import * as ClapprMarkersPlugin from 'clappr-markers-plugin'
 import * as ClapprSubtitle from './Clappr-Subtitle'
 import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
@@ -46,32 +45,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
     public defaultClapprParameters: Clappr.ClapprParam = {
 
         plugins: {
-            playback: [RTMP],
             core: [ClapprMarkersPlugin, ClapprSubtitle.ClapprSubtitle],
-        },
-        //parentId: "#player",
-        rtmpConfig: {
-            scaling:'stretch',
-            playbackType: 'live',
-            bufferTime: 1,
-            startLevel: 0,
-            switchRules: {
-                "SufficientBandwidthRule": {
-                    "bandwidthSafetyMultiple": 1.15,
-                    "minDroppedFps": 2
-                },
-                "InsufficientBufferRule": {
-                    "minBufferLength": 2
-                },
-                "DroppedFramesRule": {
-                    "downSwitchByOne": 10,
-                    "downSwitchByTwo": 20,
-                    "downSwitchToZero": 24
-                },
-                "InsufficientBandwidthRule": {
-                    "bitrateMultiplier": 1.15
-                }
-            }
         },
         markersPlugin: {
             markers: [],
