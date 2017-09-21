@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "gulp test:browserstack",
+    "test": "wct --skip-plugin=local",
     "prepublish": "npm run start",
     "build": "tsc",
     "verify": "git diff --exit-code",
@@ -35,6 +35,8 @@
     "ts-loader": "^2.3.4",
     "typedoc": "^0.8.0",
     "typescript": "^2.4.1",
+    "wct-headless": "^2.2.0",
+    "wct-istanbul": "^0.12.3",
     "web-component-tester": "^6.2.0",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.8.2"

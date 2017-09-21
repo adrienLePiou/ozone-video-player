@@ -9,7 +9,7 @@ var ALL_BROWSERS =
         },
         {
             maxInstances: 1,
-            version:54,
+            version:55,
             browserName: 'firefox',
             os: 'OS X',
             os_version: 'Sierra',
@@ -24,11 +24,20 @@ var ret = {
         'pathMappings': []
     },
     "plugins": {
-        "junit-reporter": {
-            output: {
-                path: "junitReport/",
-                name: "test-report.xml"
-            }
+        "local": {
+        },
+        "headless": {
+        },
+        istanbul: {
+            dir: "./coverage",
+            reporters: ["text-summary", "lcov"],
+            include: [
+                "build/index.js"
+            ],
+            exclude: [
+                "/polymer/polymer.js",
+                "/platform/platform.js"
+            ]
         }
     }
 };
@@ -57,11 +66,10 @@ function configBrowserStack(config) {
 if(process.env.BROWSERSTACK_USER) {
     console.log('Run test on BROWSERSTACK');
     configBrowserStack(ret);
-} else {
+} else{
     console.log('Run test locally');
-    ret.plugins.local = {
-        "browsers": ALL_BROWSERS.map((browser) => browser.browserName)
-    };
+    ret.plugins.local.browsers = ALL_BROWSERS.map((browser) => browser.browserName);
+    ret.plugins.headless.browsers = [ALL_BROWSERS[0]];
 }
 
 module.exports = ret;

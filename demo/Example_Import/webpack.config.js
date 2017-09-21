@@ -2,13 +2,12 @@
 
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
-// var HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
 var Clean = require('clean-webpack-plugin');
 var path = require('path');
-console.log(path.resolve(__dirname))
+
 module.exports = {
     // Tell Webpack which file kicks off our app.
-    entry: path.resolve(__dirname, 'testImport/index.js'),
+    entry: path.resolve(__dirname, 'index.js'),
     // Tell Weback to output our bundle to ./dist/bundle.js
     output: {
         filename: 'index.js',
@@ -64,7 +63,7 @@ module.exports = {
         // and it will handle injecting our bundle for us.
         new HtmlWebpackPlugin({
             inject: false,
-            template: path.resolve(__dirname, 'testImport/demo.ejs')
+            template: path.resolve(__dirname, 'demo.ejs')
         }),
         // This plugin will copy files over to ‘./dist’ without transforming them.
         // That's important because the custom-elements-es5-adapter.js MUST
