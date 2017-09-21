@@ -2,17 +2,17 @@
 
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
-var HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
+// var HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
 var Clean = require('clean-webpack-plugin');
 var path = require('path');
 console.log(path.resolve(__dirname))
 module.exports = {
     // Tell Webpack which file kicks off our app.
-    entry: path.resolve(__dirname, 'src/index.js'),
+    entry: path.resolve(__dirname, 'testImport/index.js'),
     // Tell Weback to output our bundle to ./dist/bundle.js
     output: {
         filename: 'index.js',
-        path: path.resolve(__dirname, 'build')
+        path: path.resolve(__dirname, 'dist')
     },
     // Tell Webpack which directories to look in to resolve import statements.
     // Normally Webpack will look in node_modules by default but since we’re overriding
@@ -21,13 +21,11 @@ module.exports = {
     resolve: {
         alias: {
             Clappr: 'clappr',
-            "../../../shadycss/apply-shim.html": "@webcomponents/shadycss/apply-shim.html",
-            "../../../shadycss/custom-style-interface.html": "@webcomponents/shadycss/custom-style-interface.html",
         },
         modules: [
-            path.resolve(__dirname, 'vendor'),
-            path.resolve(__dirname, 'node_modules/@polymer'),
-            path.resolve(__dirname, 'node_modules'),
+            path.resolve(__dirname,  'node_modules/ozone-video-player/vendor'),
+            path.resolve(__dirname,  'bower_components'),
+            path.resolve(__dirname,  'node_modules'),
 
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.html']
@@ -66,7 +64,7 @@ module.exports = {
         // and it will handle injecting our bundle for us.
         new HtmlWebpackPlugin({
             inject: false,
-            template: path.resolve(__dirname, 'src/demo.ejs')
+            template: path.resolve(__dirname, 'testImport/demo.ejs')
         }),
         // This plugin will copy files over to ‘./dist’ without transforming them.
         // That's important because the custom-elements-es5-adapter.js MUST
@@ -79,15 +77,6 @@ module.exports = {
             from: path.resolve(__dirname, 'config/conf.ozone.json'),
             to: 'conf.ozone.json'
         }]),
-        new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, 'src/ozone-video-player.html'),
-            to: '../dist/src/ozone-video-player.html'
-        }]),
         new Clean(['build']),
     ],
-    devServer: {
-        contentBase: path.join(__dirname),
-        compress: true,
-        port: 9000
-    },
 };

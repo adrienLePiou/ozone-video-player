@@ -25,6 +25,8 @@ Then include bundle element in your javaScript
 ```
 
 
+See example in demo/Example_Bundle
+
 ## Build with webpack
 
 ```javaScript
@@ -34,7 +36,7 @@ import {OzoneVideoPlayer} from "ozone-video-player";
 
 ```
 
-See webpack.config.js for webpack config example.
+See example in demo/Example_Import
 
 For usage in typeScript use option `"moduleResolution": "node"`
 
