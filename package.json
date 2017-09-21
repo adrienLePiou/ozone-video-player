@@ -2,16 +2,17 @@
   "name": "ozone-video-player",
   "version": "1.0.0",
   "description": "",
-  "main": "ozone-video-player.js",
+  "main": "dist/src/ozone-video-player.js",
+  "type": "dist/src/ozone-video-player.d.ts",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "test": "gulp test:browserstack",
-    "build": "webpack --progress",
+    "prepublish": "npm run build",
+    "build": "tsc",
     "verify": "git diff --exit-code",
     "start": "webpack --config webpack.config.js",
-    "watch": "webpack --config webpack.config.js --watch",
     "demo": "webpack-dev-server --config webpack.config.js",
     "doc": "typedoc  --out  doc/"
   },

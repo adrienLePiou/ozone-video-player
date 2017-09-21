@@ -6,22 +6,29 @@ WebComponent that play video from Ozone.
 
 # usage
 
-## Install and configure this module in a JavaScript project
+## Install
 
 Install form github
 
-bower install  taktik/ozone-video-player --save
+npm install  ozone-video-player --save
 
-Then include the element in your javaScrip
+## use pre bundle version
+
+Then include bundle element in your javaScript
 
 ```html
-<script type="text/javascript" src="bower_components/ozone-video-player/dist/ozone-video-player.js"></script></body>
+<script type="text/javascript" src="node_modules/ozone-video-player/build/index.js"></script>
 
 <ozone-video-player></ozone-video-player>
 ```
 
 
 Add conf.ozone.json at root of your project. You can adapt conf.ozone.json from this repo.
+
+
+## Build with webpack
+
+See webpack.config.js
 
 ## API
 
@@ -79,49 +86,7 @@ $ bower install
 ```
 $ npm run start
 ```
-Or watch on change
+Or watch demo on change
 ```
-$ npm run watch
-```
-
-
-## Viewing Your Element
-
-```
-$ polymer serve
-```
-
-## Running Tests
-
-```
-$ polymer test
-```
-
-Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
-index.html
-
-## install & configure this module in an other a typeScript project
-
-
-- step 1: install dependency
-
-> Install you dependency
-> bower install --save taktik/ozone-video-player
-
-- step 2: Configure you project
-
-add type refetrence in tsconfig.json
-```
-compilerOptions.path:{
-      "ozone-video-player": [
-        "./bower_components/ozone-video-player/dist/src/ozone-video-player"
-      ]
-```
-
-Add alias in webpack.conf.js
-```
-resolve: {
-        alias: {
-           'ozone-video-player': 'ozone-video-player/dist'
-        },
+$ npm run demo
 ```
