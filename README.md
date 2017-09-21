@@ -12,6 +12,8 @@ Install form github
 
 npm install  ozone-video-player --save
 
+Add conf.ozone.json at root of your project. You can adapt conf.ozone.json from this repo.
+
 ## use pre bundle version
 
 Then include bundle element in your javaScript
@@ -23,12 +25,18 @@ Then include bundle element in your javaScript
 ```
 
 
-Add conf.ozone.json at root of your project. You can adapt conf.ozone.json from this repo.
-
-
 ## Build with webpack
 
-See webpack.config.js
+```javaScript
+import {OzoneVideoPlayer} from "ozone-video-player";
+
+// Your code here
+
+```
+
+See webpack.config.js for webpack config example.
+
+For usage in typeScript use option `"moduleResolution": "node"`
 
 ## API
 
@@ -40,10 +48,15 @@ Attribute are javaScript properties accessible from the dom.
 > hidden: Default is false. True when set.
 > hide element and pause the player.
 
-* videoUrl
+* video-url (alias videoUrl)
 
 > videoUrl: string
 > Url to play a video directly
+
+* video
+
+> video: Video
+> OzoneVideo to play.
 
 ### Properties
 
