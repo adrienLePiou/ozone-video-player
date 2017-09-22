@@ -61,30 +61,6 @@ export class OzoneVideoPlayer extends Polymer.Element{
         plugins: {
             core: [ClapprMarkersPlugin, ClapprSubtitle.ClapprSubtitle],
         },
-        //parentId: "#player",
-        rtmpConfig: {
-            scaling:'stretch',
-            playbackType: 'live',
-            bufferTime: 1,
-            startLevel: 0,
-            switchRules: {
-                "SufficientBandwidthRule": {
-                    "bandwidthSafetyMultiple": 1.15,
-                    "minDroppedFps": 2
-                },
-                "InsufficientBufferRule": {
-                    "minBufferLength": 2
-                },
-                "DroppedFramesRule": {
-                    "downSwitchByOne": 10,
-                    "downSwitchByTwo": 20,
-                    "downSwitchToZero": 24
-                },
-                "InsufficientBandwidthRule": {
-                    "bitrateMultiplier": 1.15
-                }
-            }
-        },
         markersPlugin: {
             markers: [],
         },

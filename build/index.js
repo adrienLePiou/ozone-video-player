@@ -299,6 +299,776 @@ function _ensureConfig(proto) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
+
+__webpack_require__(0);
+
+(function () {
+  'use strict';
+
+  let CSS_URL_RX = /(url\()([^)]*)(\))/g;
+  let ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
+  let workingURL;
+  let resolveDoc;
+  /**
+   * Resolves the given URL against the provided `baseUri'.
+   *
+   * @memberof Polymer.ResolveUrl
+   * @param {string} url Input URL to resolve
+   * @param {?string=} baseURI Base URI to resolve the URL against
+   * @return {string} resolved URL
+   */
+  function resolveUrl(url, baseURI) {
+    if (url && ABS_URL.test(url)) {
+      return url;
+    }
+    // Lazy feature detection.
+    if (workingURL === undefined) {
+      workingURL = false;
+      try {
+        const u = new URL('b', 'http://a');
+        u.pathname = 'c%20d';
+        workingURL = u.href === 'http://a/c%20d';
+      } catch (e) {
+        // silently fail
+      }
+    }
+    if (!baseURI) {
+      baseURI = document.baseURI || window.location.href;
+    }
+    if (workingURL) {
+      return new URL(url, baseURI).href;
+    }
+    // Fallback to creating an anchor into a disconnected document.
+    if (!resolveDoc) {
+      resolveDoc = document.implementation.createHTMLDocument('temp');
+      resolveDoc.base = resolveDoc.createElement('base');
+      resolveDoc.head.appendChild(resolveDoc.base);
+      resolveDoc.anchor = resolveDoc.createElement('a');
+      resolveDoc.body.appendChild(resolveDoc.anchor);
+    }
+    resolveDoc.base.href = baseURI;
+    resolveDoc.anchor.href = url;
+    return resolveDoc.anchor.href || url;
+  }
+
+  /**
+   * Resolves any relative URL's in the given CSS text against the provided
+   * `ownerDocument`'s `baseURI`.
+   *
+   * @memberof Polymer.ResolveUrl
+   * @param {string} cssText CSS text to process
+   * @param {string} baseURI Base URI to resolve the URL against
+   * @return {string} Processed CSS text with resolved URL's
+   */
+  function resolveCss(cssText, baseURI) {
+    return cssText.replace(CSS_URL_RX, function (m, pre, url, post) {
+      return pre + '\'' + resolveUrl(url.replace(/["']/g, ''), baseURI) + '\'' + post;
+    });
+  }
+
+  /**
+   * Returns a path from a given `url`. The path includes the trailing
+   * `/` from the url.
+   *
+   * @memberof Polymer.ResolveUrl
+   * @param {string} url Input URL to transform
+   * @return {string} resolved path
+   */
+  function pathFromUrl(url) {
+    return url.substring(0, url.lastIndexOf('/') + 1);
+  }
+
+  /**
+   * Module with utilities for resolving relative URL's.
+   *
+   * @namespace
+   * @memberof Polymer
+   * @summary Module with utilities for resolving relative URL's.
+   */
+  Polymer.ResolveUrl = {
+    resolveCss: resolveCss,
+    resolveUrl: resolveUrl,
+    pathFromUrl: pathFromUrl
+  };
+})();
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+__webpack_require__(0);
+
+(function () {
+
+  'use strict';
+
+  /** @typedef {{run: function(function(), number=):number, cancel: function(number)}} */
+
+  let AsyncInterface; // eslint-disable-line no-unused-vars
+
+  // Microtask implemented using Mutation Observer
+  let microtaskCurrHandle = 0;
+  let microtaskLastHandle = 0;
+  let microtaskCallbacks = [];
+  let microtaskNodeContent = 0;
+  let microtaskNode = document.createTextNode('');
+  new window.MutationObserver(microtaskFlush).observe(microtaskNode, { characterData: true });
+
+  function microtaskFlush() {
+    const len = microtaskCallbacks.length;
+    for (let i = 0; i < len; i++) {
+      let cb = microtaskCallbacks[i];
+      if (cb) {
+        try {
+          cb();
+        } catch (e) {
+          setTimeout(() => {
+            throw e;
+          });
+        }
+      }
+    }
+    microtaskCallbacks.splice(0, len);
+    microtaskLastHandle += len;
+  }
+
+  /**
+   * Module that provides a number of strategies for enqueuing asynchronous
+   * tasks.  Each sub-module provides a standard `run(fn)` interface that returns a
+   * handle, and a `cancel(handle)` interface for canceling async tasks before
+   * they run.
+   *
+   * @namespace
+   * @memberof Polymer
+   * @summary Module that provides a number of strategies for enqueuing asynchronous
+   * tasks.
+   */
+  Polymer.Async = {
+
+    /**
+     * Async interface wrapper around `setTimeout`.
+     *
+     * @namespace
+     * @memberof Polymer.Async
+     * @summary Async interface wrapper around `setTimeout`.
+     */
+    timeOut: {
+      /**
+       * Returns a sub-module with the async interface providing the provided
+       * delay.
+       *
+       * @memberof Polymer.Async.timeOut
+       * @param {number} delay Time to wait before calling callbacks in ms
+       * @return {AsyncInterface} An async timeout interface
+       */
+      after(delay) {
+        return {
+          run(fn) {
+            return setTimeout(fn, delay);
+          },
+          cancel: window.clearTimeout.bind(window)
+        };
+      },
+      /**
+       * Enqueues a function called in the next task.
+       *
+       * @memberof Polymer.Async.timeOut
+       * @param {Function} fn Callback to run
+       * @return {number} Handle used for canceling task
+       */
+      run: window.setTimeout.bind(window),
+      /**
+       * Cancels a previously enqueued `timeOut` callback.
+       *
+       * @memberof Polymer.Async.timeOut
+       * @param {number} handle Handle returned from `run` of callback to cancel
+       */
+      cancel: window.clearTimeout.bind(window)
+    },
+
+    /**
+     * Async interface wrapper around `requestAnimationFrame`.
+     *
+     * @namespace
+     * @memberof Polymer.Async
+     * @summary Async interface wrapper around `requestAnimationFrame`.
+     */
+    animationFrame: {
+      /**
+       * Enqueues a function called at `requestAnimationFrame` timing.
+       *
+       * @memberof Polymer.Async.animationFrame
+       * @param {Function} fn Callback to run
+       * @return {number} Handle used for canceling task
+       */
+      run: window.requestAnimationFrame.bind(window),
+      /**
+       * Cancels a previously enqueued `animationFrame` callback.
+       *
+       * @memberof Polymer.Async.timeOut
+       * @param {number} handle Handle returned from `run` of callback to cancel
+       */
+      cancel: window.cancelAnimationFrame.bind(window)
+    },
+
+    /**
+     * Async interface wrapper around `requestIdleCallback`.  Falls back to
+     * `setTimeout` on browsers that do not support `requestIdleCallback`.
+     *
+     * @namespace
+     * @memberof Polymer.Async
+     * @summary Async interface wrapper around `requestIdleCallback`.
+     */
+    idlePeriod: {
+      /**
+       * Enqueues a function called at `requestIdleCallback` timing.
+       *
+       * @memberof Polymer.Async.idlePeriod
+       * @param {function(IdleDeadline)} fn Callback to run
+       * @return {number} Handle used for canceling task
+       */
+      run(fn) {
+        return window.requestIdleCallback ? window.requestIdleCallback(fn) : window.setTimeout(fn, 16);
+      },
+      /**
+       * Cancels a previously enqueued `idlePeriod` callback.
+       *
+       * @memberof Polymer.Async.idlePeriod
+       * @param {number} handle Handle returned from `run` of callback to cancel
+       */
+      cancel(handle) {
+        window.cancelIdleCallback ? window.cancelIdleCallback(handle) : window.clearTimeout(handle);
+      }
+    },
+
+    /**
+     * Async interface for enqueuing callbacks that run at microtask timing.
+     *
+     * Note that microtask timing is achieved via a single `MutationObserver`,
+     * and thus callbacks enqueued with this API will all run in a single
+     * batch, and not interleaved with other microtasks such as promises.
+     * Promises are avoided as an implementation choice for the time being
+     * due to Safari bugs that cause Promises to lack microtask guarantees.
+     *
+     * @namespace
+     * @memberof Polymer.Async
+     * @summary Async interface for enqueuing callbacks that run at microtask
+     *   timing.
+     */
+    microTask: {
+
+      /**
+       * Enqueues a function called at microtask timing.
+       *
+       * @memberof Polymer.Async.microTask
+       * @param {Function} callback Callback to run
+       * @return {number} Handle used for canceling task
+       */
+      run(callback) {
+        microtaskNode.textContent = microtaskNodeContent++;
+        microtaskCallbacks.push(callback);
+        return microtaskCurrHandle++;
+      },
+
+      /**
+       * Cancels a previously enqueued `microTask` callback.
+       *
+       * @memberof Polymer.Async.microTask
+       * @param {number} handle Handle returned from `run` of callback to cancel
+       */
+      cancel(handle) {
+        const idx = handle - microtaskLastHandle;
+        if (idx >= 0) {
+          if (!microtaskCallbacks[idx]) {
+            throw new Error('invalid async handle: ' + handle);
+          }
+          microtaskCallbacks[idx] = null;
+        }
+      }
+
+    }
+  };
+})();
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+__webpack_require__(1);
+
+(function () {
+  'use strict';
+
+  // Common implementation for mixin & behavior
+
+  function mutablePropertyChange(inst, property, value, old, mutableData) {
+    let isObject;
+    if (mutableData) {
+      isObject = typeof value === 'object' && value !== null;
+      // Pull `old` for Objects from temp cache, but treat `null` as a primitive
+      if (isObject) {
+        old = inst.__dataTemp[property];
+      }
+    }
+    // Strict equality check, but return false for NaN===NaN
+    let shouldChange = old !== value && (old === old || value === value);
+    // Objects are stored in temporary cache (cleared at end of
+    // turn), which is used for dirty-checking
+    if (isObject && shouldChange) {
+      inst.__dataTemp[property] = value;
+    }
+    return shouldChange;
+  }
+
+  /**
+   * Element class mixin to skip strict dirty-checking for objects and arrays
+   * (always consider them to be "dirty"), for use on elements utilizing
+   * `Polymer.PropertyEffects`
+   *
+   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
+   * objects, which means that any deep modifications to an object or array will
+   * not be propagated unless "immutable" data patterns are used (i.e. all object
+   * references from the root to the mutation were changed).
+   *
+   * Polymer also provides a proprietary data mutation and path notification API
+   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
+   * mutation and notification of deep changes in an object graph to all elements
+   * bound to the same object graph.
+   *
+   * In cases where neither immutable patterns nor the data mutation API can be
+   * used, applying this mixin will cause Polymer to skip dirty checking for
+   * objects and arrays (always consider them to be "dirty").  This allows a
+   * user to make a deep modification to a bound object graph, and then either
+   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
+   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
+   * elements that wish to be updated based on deep mutations must apply this
+   * mixin or otherwise skip strict dirty checking for objects/arrays.
+   *
+   * In order to make the dirty check strategy configurable, see
+   * `Polymer.OptionalMutableData`.
+   *
+   * Note, the performance characteristics of propagating large object graphs
+   * will be worse as opposed to using strict dirty checking with immutable
+   * patterns or Polymer's path notification API.
+   *
+   * @mixinFunction
+   * @polymer
+   * @memberof Polymer
+   * @summary Element class mixin to skip strict dirty-checking for objects
+   *   and arrays
+   */
+  Polymer.MutableData = Polymer.dedupingMixin(superClass => {
+
+    /**
+     * @polymer
+     * @mixinClass
+     * @implements {Polymer_MutableData}
+     */
+    class MutableData extends superClass {
+      /**
+       * Overrides `Polymer.PropertyEffects` to provide option for skipping
+       * strict equality checking for Objects and Arrays.
+       *
+       * This method pulls the value to dirty check against from the `__dataTemp`
+       * cache (rather than the normal `__data` cache) for Objects.  Since the temp
+       * cache is cleared at the end of a turn, this implementation allows
+       * side-effects of deep object changes to be processed by re-setting the
+       * same object (using the temp cache as an in-turn backstop to prevent
+       * cycles due to 2-way notification).
+       *
+       * @param {string} property Property name
+       * @param {*} value New property value
+       * @param {*} old Previous property value
+       * @return {boolean} Whether the property should be considered a change
+       * @protected
+       */
+      _shouldPropertyChange(property, value, old) {
+        return mutablePropertyChange(this, property, value, old, true);
+      }
+
+    }
+    /** @type {boolean} */
+    MutableData.prototype.mutableData = false;
+
+    return MutableData;
+  });
+
+  /**
+   * Element class mixin to add the optional ability to skip strict
+   * dirty-checking for objects and arrays (always consider them to be
+   * "dirty") by setting a `mutable-data` attribute on an element instance.
+   *
+   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
+   * objects, which means that any deep modifications to an object or array will
+   * not be propagated unless "immutable" data patterns are used (i.e. all object
+   * references from the root to the mutation were changed).
+   *
+   * Polymer also provides a proprietary data mutation and path notification API
+   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
+   * mutation and notification of deep changes in an object graph to all elements
+   * bound to the same object graph.
+   *
+   * In cases where neither immutable patterns nor the data mutation API can be
+   * used, applying this mixin will allow Polymer to skip dirty checking for
+   * objects and arrays (always consider them to be "dirty").  This allows a
+   * user to make a deep modification to a bound object graph, and then either
+   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
+   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
+   * elements that wish to be updated based on deep mutations must apply this
+   * mixin or otherwise skip strict dirty checking for objects/arrays.
+   *
+   * While this mixin adds the ability to forgo Object/Array dirty checking,
+   * the `mutableData` flag defaults to false and must be set on the instance.
+   *
+   * Note, the performance characteristics of propagating large object graphs
+   * will be worse by relying on `mutableData: true` as opposed to using
+   * strict dirty checking with immutable patterns or Polymer's path notification
+   * API.
+   *
+   * @mixinFunction
+   * @polymer
+   * @memberof Polymer
+   * @summary Element class mixin to optionally skip strict dirty-checking
+   *   for objects and arrays
+   */
+  Polymer.OptionalMutableData = Polymer.dedupingMixin(superClass => {
+
+    /**
+     * @mixinClass
+     * @polymer
+     * @implements {Polymer_OptionalMutableData}
+     */
+    class OptionalMutableData extends superClass {
+
+      static get properties() {
+        return {
+          /**
+           * Instance-level flag for configuring the dirty-checking strategy
+           * for this element.  When true, Objects and Arrays will skip dirty
+           * checking, otherwise strict equality checking will be used.
+           */
+          mutableData: Boolean
+        };
+      }
+
+      /**
+       * Overrides `Polymer.PropertyEffects` to provide option for skipping
+       * strict equality checking for Objects and Arrays.
+       *
+       * When `this.mutableData` is true on this instance, this method
+       * pulls the value to dirty check against from the `__dataTemp` cache
+       * (rather than the normal `__data` cache) for Objects.  Since the temp
+       * cache is cleared at the end of a turn, this implementation allows
+       * side-effects of deep object changes to be processed by re-setting the
+       * same object (using the temp cache as an in-turn backstop to prevent
+       * cycles due to 2-way notification).
+       *
+       * @param {string} property Property name
+       * @param {*} value New property value
+       * @param {*} old Previous property value
+       * @return {boolean} Whether the property should be considered a change
+       * @protected
+       */
+      _shouldPropertyChange(property, value, old) {
+        return mutablePropertyChange(this, property, value, old, this.mutableData);
+      }
+    }
+
+    return OptionalMutableData;
+  });
+
+  // Export for use by legacy behavior
+  Polymer.MutableData._mutablePropertyChange = mutablePropertyChange;
+})();
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneConfig; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_taktik_polymer_typescript__ = __webpack_require__(2);
+/// <amd-module name="ozone-config"/>
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+const configUrl = './conf.ozone.json';
+const ozoneAPIRequest = new __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__["a" /* OzoneAPIRequest */]();
+ozoneAPIRequest.url = configUrl;
+ozoneAPIRequest.method = 'GET';
+const configPromise = ozoneAPIRequest.sendRequest().then(res => {
+    return res.response.ozoneApi;
+}).catch(failRequest => {
+    console.error('Unable to find config at ', configUrl);
+    throw new Error('Unable to find config');
+});
+let OzoneConfig = class OzoneConfig {
+    static get() {
+        return configPromise;
+    }
+};
+OzoneConfig = __decorate([Object(__WEBPACK_IMPORTED_MODULE_1_taktik_polymer_typescript__["b" /* jsElement */])()], OzoneConfig);
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneAPIRequest; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__ = __webpack_require__(2);
+/// <amd-module name="ozone-api-request"/>
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+/**
+ * OzoneAPIRequest is a light wrapper over XMLHttpRequest to manager AJAX request to Ozone.
+ *
+ * ### Events
+ *
+ * * *ozone-api-request-success* Fired when connection to ozone succeeds.
+ * Event detail contains the XMLHttpRequest.
+ *
+ * * *ozone-api-request-error* Fired when connection to ozone fails.
+ * Event detail contains the XMLHttpRequest.
+ *
+
+ * * *ozone-api-request-timeout* Fired when connection timeout.
+ * Event detail contains the XMLHttpRequest.
+ *
+ * * *ozone-api-request-unauthorized* Fired when server return 403 unauthorized.
+ * Event detail contains the XMLHttpRequest.
+ *
+ *
+ * ### Usage
+ *
+ * * Basic usage with promise
+ * ```typeScript
+ * const OzoneAPIRequest = new OzoneAPIRequest();
+ * OzoneAPIRequest.url = url;
+ * OzoneAPIRequest.method = 'GET';
+ * OzoneAPIRequest.sendRequest()
+ *    .then((res:XMLHttpRequest) => {
+ *        // Do something with XMLHttpRequest
+ *        console.log(res.response)
+ *    })
+ *    .catch((failRequest)=>{
+ *        // Do something with XMLHttpRequest to handel the error.
+ *        console.error(failRequest.statusText)
+ *    })
+ * ```
+ *
+ *
+ * * Usage with Event handler
+ * ```typeScript
+ * this.addEventListener('ozone-api-request-success', (event: Event) => {
+ *        // Do something with XMLHttpRequest
+ *        console.log(event.detail.response)
+ *    })
+ * this.addEventListener('ozone-api-request-error', (event: Event) => {
+ *        // Do something with XMLHttpRequest to handel the error.
+ *        console.error(event.detail.statusText)
+ *    })
+ * const OzoneAPIRequest = new OzoneAPIRequest();
+ * OzoneAPIRequest.setEventTarget(this)
+ * OzoneAPIRequest.url = url;
+ * OzoneAPIRequest.method = 'GET';
+ * OzoneAPIRequest.sendRequest();
+ * ```
+ *
+ * * Modify request before send
+ * ```typeScript
+ * const OzoneAPIRequest = new OzoneAPIRequest();
+ * OzoneAPIRequest.url = url;
+ * OzoneAPIRequest.method = 'GET';
+ * const request = OzoneAPIRequest.createXMLHttpRequest();
+ * // Modify default request
+ * request.setRequestHeader('Cache-Control', 'only-if-cached');
+ *
+ * OzoneAPIRequest.sendRequest(request);
+ * // Handel response
+ * ```
+ *
+ */
+let OzoneAPIRequest = class OzoneAPIRequest {
+    /**
+     * OzoneAPIRequest is a light wrapper over XMLHttpRequest to manager AJAX request to Ozone.
+     *
+     * ### Events
+     *
+     * * *ozone-api-request-success* Fired when connection to ozone succeeds.
+     * Event detail contains the XMLHttpRequest.
+     *
+     * * *ozone-api-request-error* Fired when connection to ozone fails.
+     * Event detail contains the XMLHttpRequest.
+     *
+    
+     * * *ozone-api-request-timeout* Fired when connection timeout.
+     * Event detail contains the XMLHttpRequest.
+     *
+     * * *ozone-api-request-unauthorized* Fired when server return 403 unauthorized.
+     * Event detail contains the XMLHttpRequest.
+     *
+     *
+     * ### Usage
+     *
+     * * Basic usage with promise
+     * ```typeScript
+     * const OzoneAPIRequest = new OzoneAPIRequest();
+     * OzoneAPIRequest.url = url;
+     * OzoneAPIRequest.method = 'GET';
+     * OzoneAPIRequest.sendRequest()
+     *    .then((res:XMLHttpRequest) => {
+     *        // Do something with XMLHttpRequest
+     *        console.log(res.response)
+     *    })
+     *    .catch((failRequest)=>{
+     *        // Do something with XMLHttpRequest to handel the error.
+     *        console.error(failRequest.statusText)
+     *    })
+     * ```
+     *
+     *
+     * * Usage with Event handler
+     * ```typeScript
+     * this.addEventListener('ozone-api-request-success', (event: Event) => {
+     *        // Do something with XMLHttpRequest
+     *        console.log(event.detail.response)
+     *    })
+     * this.addEventListener('ozone-api-request-error', (event: Event) => {
+     *        // Do something with XMLHttpRequest to handel the error.
+     *        console.error(event.detail.statusText)
+     *    })
+     * const OzoneAPIRequest = new OzoneAPIRequest();
+     * OzoneAPIRequest.setEventTarget(this)
+     * OzoneAPIRequest.url = url;
+     * OzoneAPIRequest.method = 'GET';
+     * OzoneAPIRequest.sendRequest();
+     * ```
+     *
+     * * Modify request before send
+     * ```typeScript
+     * const OzoneAPIRequest = new OzoneAPIRequest();
+     * OzoneAPIRequest.url = url;
+     * OzoneAPIRequest.method = 'GET';
+     * const request = OzoneAPIRequest.createXMLHttpRequest();
+     * // Modify default request
+     * request.setRequestHeader('Cache-Control', 'only-if-cached');
+     *
+     * OzoneAPIRequest.sendRequest(request);
+     * // Handel response
+     * ```
+     *
+     */
+    constructor() {
+        this._method = 'GET';
+        this._responseType = 'json';
+        /**
+         * eventTarget to dispatch *ozone-api-request-success* and *ozone-api-request-error* events
+         * Default value is document.
+         * @type {EventTarget}
+         */
+        this.eventTarget = document;
+    }
+    set url(url) {
+        this._url = url;
+    }
+    get url() {
+        return this._url;
+    }
+    set body(body) {
+        this._body = body;
+    }
+    get body() {
+        return this._body;
+    }
+    set method(method) {
+        this._method = method;
+    }
+    get method() {
+        return this._method;
+    }
+    set responseType(responseType) {
+        this._responseType = responseType;
+    }
+    get responseType() {
+        return this._responseType;
+    }
+    /**
+     * Create and open an XMLHttpRequest
+     * @return {XMLHttpRequest}
+     */
+    createXMLHttpRequest() {
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.withCredentials = true;
+        xmlhttp.responseType = this.responseType;
+        xmlhttp.open(this.method, this.url, true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.setRequestHeader('Accept', 'application/json');
+        return xmlhttp;
+    }
+    setEventTarget(element) {
+        this.eventTarget = element;
+    }
+    /**
+     *
+     * @param {XMLHttpRequest} request (optional) This parameters overwrite the default XmlHttpRequest.
+     * @return {Promise<XMLHttpRequest>}
+     */
+    sendRequest(request) {
+        const xmlhttp = request || this.createXMLHttpRequest();
+        return new Promise((resolve, reject) => {
+            xmlhttp.onload = () => {
+                this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-success', {
+                    bubbles: true, composed: true, detail: xmlhttp
+                }));
+                resolve(xmlhttp);
+            };
+            xmlhttp.ontimeout = () => {
+                this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-timeout', {
+                    bubbles: true, composed: true, detail: xmlhttp
+                }));
+                reject(xmlhttp);
+            };
+            xmlhttp.onerror = () => {
+                switch (xmlhttp.status) {
+                    case 403:
+                        this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-unauthorized', {
+                            bubbles: true, composed: true, detail: xmlhttp
+                        }));
+                        break;
+                    default:
+                        this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-error', {
+                            bubbles: true, composed: true, detail: xmlhttp
+                        }));
+                }
+                reject(xmlhttp);
+            };
+            xmlhttp.send(this.body);
+        });
+    }
+};
+OzoneAPIRequest = __decorate([Object(__WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__["b" /* jsElement */])()], OzoneAPIRequest);
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
 (function webpackUniversalModuleDefinition(root,factory){if(true)module.exports=factory();else if(typeof define==='function'&&define.amd)define([],factory);else if(typeof exports==='object')exports["Clappr"]=factory();else root["Clappr"]=factory();})(this,function(){return(/******/function(modules){// webpackBootstrap
 /******/// The module cache
 /******/var installedModules={};/******//******/// The require function
@@ -4427,776 +5197,6 @@ exports.push([module.i,".seek-time[data-seek-time] {\n  position: absolute;\n  w
    */Strings.prototype.t=function t(key){var lang=this._language();var i18n=lang&&this._messages[lang]||this._messages['en'];return i18n[key]||key;};Strings.prototype._language=function _language(){return this.core.options.language||(0,_utils.getBrowserLanguage)();};Strings.prototype._initializeMessages=function _initializeMessages(){var defaultMessages={'en':{'live':'live','back_to_live':'back to live','disabled':'Disabled','playback_not_supported':'Your browser does not support the playback of this video. Please try using a different browser.'},'pt':{'live':'ao vivo','back_to_live':'voltar para o ao vivo','disabled':'Desativado','playback_not_supported':'Seu navegador não supporta a reprodução deste video. Por favor, tente usar um navegador diferente.'},'es':{'live':'vivo','back_to_live':'volver en vivo','disabled':'Discapacitado','playback_not_supported':'Su navegador no soporta la reproducción de un video. Por favor, trate de usar un navegador diferente.'},'ru':{'live':'прямой эфир','back_to_live':'к прямому эфиру','disabled':'Отключено','playback_not_supported':'Ваш браузер не поддерживает воспроизведение этого видео. Пожалуйста, попробуйте другой браузер.'},'fr':{'live':'en direct','disabled':'Désactivé','back_to_live':'retour au direct','playback_not_supported':'Votre navigateur ne supporte pas la lecture de cette vidéo. Merci de tenter sur un autre navigateur.'},'tr':{'live':'canlı','back_to_live':'canlı yayına dön','disabled':'Engelli','playback_not_supported':'Tarayıcınız bu videoyu oynatma desteğine sahip değil. Lütfen farklı bir tarayıcı ile deneyin.'}};var strings=this.core.options.strings||{};this._messages=(0,_keys2.default)(defaultMessages).reduce(function(messages,lang){messages[lang]=_clapprZepto2.default.extend({},defaultMessages[lang],strings[lang]);return messages;},{});this._messages['pt-BR']=this._messages['pt'];this._messages['en-US']=this._messages['en'];this._messages['es-419']=this._messages['es'];this._messages['fr-FR']=this._messages['fr'];this._messages['tr-TR']=this._messages['tr'];};return Strings;}(_core_plugin2.default);exports.default=Strings;module.exports=exports['default'];/***/}]/******/));});
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-__webpack_require__(0);
-
-(function () {
-  'use strict';
-
-  let CSS_URL_RX = /(url\()([^)]*)(\))/g;
-  let ABS_URL = /(^\/)|(^#)|(^[\w-\d]*:)/;
-  let workingURL;
-  let resolveDoc;
-  /**
-   * Resolves the given URL against the provided `baseUri'.
-   *
-   * @memberof Polymer.ResolveUrl
-   * @param {string} url Input URL to resolve
-   * @param {?string=} baseURI Base URI to resolve the URL against
-   * @return {string} resolved URL
-   */
-  function resolveUrl(url, baseURI) {
-    if (url && ABS_URL.test(url)) {
-      return url;
-    }
-    // Lazy feature detection.
-    if (workingURL === undefined) {
-      workingURL = false;
-      try {
-        const u = new URL('b', 'http://a');
-        u.pathname = 'c%20d';
-        workingURL = u.href === 'http://a/c%20d';
-      } catch (e) {
-        // silently fail
-      }
-    }
-    if (!baseURI) {
-      baseURI = document.baseURI || window.location.href;
-    }
-    if (workingURL) {
-      return new URL(url, baseURI).href;
-    }
-    // Fallback to creating an anchor into a disconnected document.
-    if (!resolveDoc) {
-      resolveDoc = document.implementation.createHTMLDocument('temp');
-      resolveDoc.base = resolveDoc.createElement('base');
-      resolveDoc.head.appendChild(resolveDoc.base);
-      resolveDoc.anchor = resolveDoc.createElement('a');
-      resolveDoc.body.appendChild(resolveDoc.anchor);
-    }
-    resolveDoc.base.href = baseURI;
-    resolveDoc.anchor.href = url;
-    return resolveDoc.anchor.href || url;
-  }
-
-  /**
-   * Resolves any relative URL's in the given CSS text against the provided
-   * `ownerDocument`'s `baseURI`.
-   *
-   * @memberof Polymer.ResolveUrl
-   * @param {string} cssText CSS text to process
-   * @param {string} baseURI Base URI to resolve the URL against
-   * @return {string} Processed CSS text with resolved URL's
-   */
-  function resolveCss(cssText, baseURI) {
-    return cssText.replace(CSS_URL_RX, function (m, pre, url, post) {
-      return pre + '\'' + resolveUrl(url.replace(/["']/g, ''), baseURI) + '\'' + post;
-    });
-  }
-
-  /**
-   * Returns a path from a given `url`. The path includes the trailing
-   * `/` from the url.
-   *
-   * @memberof Polymer.ResolveUrl
-   * @param {string} url Input URL to transform
-   * @return {string} resolved path
-   */
-  function pathFromUrl(url) {
-    return url.substring(0, url.lastIndexOf('/') + 1);
-  }
-
-  /**
-   * Module with utilities for resolving relative URL's.
-   *
-   * @namespace
-   * @memberof Polymer
-   * @summary Module with utilities for resolving relative URL's.
-   */
-  Polymer.ResolveUrl = {
-    resolveCss: resolveCss,
-    resolveUrl: resolveUrl,
-    pathFromUrl: pathFromUrl
-  };
-})();
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-__webpack_require__(0);
-
-(function () {
-
-  'use strict';
-
-  /** @typedef {{run: function(function(), number=):number, cancel: function(number)}} */
-
-  let AsyncInterface; // eslint-disable-line no-unused-vars
-
-  // Microtask implemented using Mutation Observer
-  let microtaskCurrHandle = 0;
-  let microtaskLastHandle = 0;
-  let microtaskCallbacks = [];
-  let microtaskNodeContent = 0;
-  let microtaskNode = document.createTextNode('');
-  new window.MutationObserver(microtaskFlush).observe(microtaskNode, { characterData: true });
-
-  function microtaskFlush() {
-    const len = microtaskCallbacks.length;
-    for (let i = 0; i < len; i++) {
-      let cb = microtaskCallbacks[i];
-      if (cb) {
-        try {
-          cb();
-        } catch (e) {
-          setTimeout(() => {
-            throw e;
-          });
-        }
-      }
-    }
-    microtaskCallbacks.splice(0, len);
-    microtaskLastHandle += len;
-  }
-
-  /**
-   * Module that provides a number of strategies for enqueuing asynchronous
-   * tasks.  Each sub-module provides a standard `run(fn)` interface that returns a
-   * handle, and a `cancel(handle)` interface for canceling async tasks before
-   * they run.
-   *
-   * @namespace
-   * @memberof Polymer
-   * @summary Module that provides a number of strategies for enqueuing asynchronous
-   * tasks.
-   */
-  Polymer.Async = {
-
-    /**
-     * Async interface wrapper around `setTimeout`.
-     *
-     * @namespace
-     * @memberof Polymer.Async
-     * @summary Async interface wrapper around `setTimeout`.
-     */
-    timeOut: {
-      /**
-       * Returns a sub-module with the async interface providing the provided
-       * delay.
-       *
-       * @memberof Polymer.Async.timeOut
-       * @param {number} delay Time to wait before calling callbacks in ms
-       * @return {AsyncInterface} An async timeout interface
-       */
-      after(delay) {
-        return {
-          run(fn) {
-            return setTimeout(fn, delay);
-          },
-          cancel: window.clearTimeout.bind(window)
-        };
-      },
-      /**
-       * Enqueues a function called in the next task.
-       *
-       * @memberof Polymer.Async.timeOut
-       * @param {Function} fn Callback to run
-       * @return {number} Handle used for canceling task
-       */
-      run: window.setTimeout.bind(window),
-      /**
-       * Cancels a previously enqueued `timeOut` callback.
-       *
-       * @memberof Polymer.Async.timeOut
-       * @param {number} handle Handle returned from `run` of callback to cancel
-       */
-      cancel: window.clearTimeout.bind(window)
-    },
-
-    /**
-     * Async interface wrapper around `requestAnimationFrame`.
-     *
-     * @namespace
-     * @memberof Polymer.Async
-     * @summary Async interface wrapper around `requestAnimationFrame`.
-     */
-    animationFrame: {
-      /**
-       * Enqueues a function called at `requestAnimationFrame` timing.
-       *
-       * @memberof Polymer.Async.animationFrame
-       * @param {Function} fn Callback to run
-       * @return {number} Handle used for canceling task
-       */
-      run: window.requestAnimationFrame.bind(window),
-      /**
-       * Cancels a previously enqueued `animationFrame` callback.
-       *
-       * @memberof Polymer.Async.timeOut
-       * @param {number} handle Handle returned from `run` of callback to cancel
-       */
-      cancel: window.cancelAnimationFrame.bind(window)
-    },
-
-    /**
-     * Async interface wrapper around `requestIdleCallback`.  Falls back to
-     * `setTimeout` on browsers that do not support `requestIdleCallback`.
-     *
-     * @namespace
-     * @memberof Polymer.Async
-     * @summary Async interface wrapper around `requestIdleCallback`.
-     */
-    idlePeriod: {
-      /**
-       * Enqueues a function called at `requestIdleCallback` timing.
-       *
-       * @memberof Polymer.Async.idlePeriod
-       * @param {function(IdleDeadline)} fn Callback to run
-       * @return {number} Handle used for canceling task
-       */
-      run(fn) {
-        return window.requestIdleCallback ? window.requestIdleCallback(fn) : window.setTimeout(fn, 16);
-      },
-      /**
-       * Cancels a previously enqueued `idlePeriod` callback.
-       *
-       * @memberof Polymer.Async.idlePeriod
-       * @param {number} handle Handle returned from `run` of callback to cancel
-       */
-      cancel(handle) {
-        window.cancelIdleCallback ? window.cancelIdleCallback(handle) : window.clearTimeout(handle);
-      }
-    },
-
-    /**
-     * Async interface for enqueuing callbacks that run at microtask timing.
-     *
-     * Note that microtask timing is achieved via a single `MutationObserver`,
-     * and thus callbacks enqueued with this API will all run in a single
-     * batch, and not interleaved with other microtasks such as promises.
-     * Promises are avoided as an implementation choice for the time being
-     * due to Safari bugs that cause Promises to lack microtask guarantees.
-     *
-     * @namespace
-     * @memberof Polymer.Async
-     * @summary Async interface for enqueuing callbacks that run at microtask
-     *   timing.
-     */
-    microTask: {
-
-      /**
-       * Enqueues a function called at microtask timing.
-       *
-       * @memberof Polymer.Async.microTask
-       * @param {Function} callback Callback to run
-       * @return {number} Handle used for canceling task
-       */
-      run(callback) {
-        microtaskNode.textContent = microtaskNodeContent++;
-        microtaskCallbacks.push(callback);
-        return microtaskCurrHandle++;
-      },
-
-      /**
-       * Cancels a previously enqueued `microTask` callback.
-       *
-       * @memberof Polymer.Async.microTask
-       * @param {number} handle Handle returned from `run` of callback to cancel
-       */
-      cancel(handle) {
-        const idx = handle - microtaskLastHandle;
-        if (idx >= 0) {
-          if (!microtaskCallbacks[idx]) {
-            throw new Error('invalid async handle: ' + handle);
-          }
-          microtaskCallbacks[idx] = null;
-        }
-      }
-
-    }
-  };
-})();
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-__webpack_require__(1);
-
-(function () {
-  'use strict';
-
-  // Common implementation for mixin & behavior
-
-  function mutablePropertyChange(inst, property, value, old, mutableData) {
-    let isObject;
-    if (mutableData) {
-      isObject = typeof value === 'object' && value !== null;
-      // Pull `old` for Objects from temp cache, but treat `null` as a primitive
-      if (isObject) {
-        old = inst.__dataTemp[property];
-      }
-    }
-    // Strict equality check, but return false for NaN===NaN
-    let shouldChange = old !== value && (old === old || value === value);
-    // Objects are stored in temporary cache (cleared at end of
-    // turn), which is used for dirty-checking
-    if (isObject && shouldChange) {
-      inst.__dataTemp[property] = value;
-    }
-    return shouldChange;
-  }
-
-  /**
-   * Element class mixin to skip strict dirty-checking for objects and arrays
-   * (always consider them to be "dirty"), for use on elements utilizing
-   * `Polymer.PropertyEffects`
-   *
-   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
-   * objects, which means that any deep modifications to an object or array will
-   * not be propagated unless "immutable" data patterns are used (i.e. all object
-   * references from the root to the mutation were changed).
-   *
-   * Polymer also provides a proprietary data mutation and path notification API
-   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
-   * mutation and notification of deep changes in an object graph to all elements
-   * bound to the same object graph.
-   *
-   * In cases where neither immutable patterns nor the data mutation API can be
-   * used, applying this mixin will cause Polymer to skip dirty checking for
-   * objects and arrays (always consider them to be "dirty").  This allows a
-   * user to make a deep modification to a bound object graph, and then either
-   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
-   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
-   * elements that wish to be updated based on deep mutations must apply this
-   * mixin or otherwise skip strict dirty checking for objects/arrays.
-   *
-   * In order to make the dirty check strategy configurable, see
-   * `Polymer.OptionalMutableData`.
-   *
-   * Note, the performance characteristics of propagating large object graphs
-   * will be worse as opposed to using strict dirty checking with immutable
-   * patterns or Polymer's path notification API.
-   *
-   * @mixinFunction
-   * @polymer
-   * @memberof Polymer
-   * @summary Element class mixin to skip strict dirty-checking for objects
-   *   and arrays
-   */
-  Polymer.MutableData = Polymer.dedupingMixin(superClass => {
-
-    /**
-     * @polymer
-     * @mixinClass
-     * @implements {Polymer_MutableData}
-     */
-    class MutableData extends superClass {
-      /**
-       * Overrides `Polymer.PropertyEffects` to provide option for skipping
-       * strict equality checking for Objects and Arrays.
-       *
-       * This method pulls the value to dirty check against from the `__dataTemp`
-       * cache (rather than the normal `__data` cache) for Objects.  Since the temp
-       * cache is cleared at the end of a turn, this implementation allows
-       * side-effects of deep object changes to be processed by re-setting the
-       * same object (using the temp cache as an in-turn backstop to prevent
-       * cycles due to 2-way notification).
-       *
-       * @param {string} property Property name
-       * @param {*} value New property value
-       * @param {*} old Previous property value
-       * @return {boolean} Whether the property should be considered a change
-       * @protected
-       */
-      _shouldPropertyChange(property, value, old) {
-        return mutablePropertyChange(this, property, value, old, true);
-      }
-
-    }
-    /** @type {boolean} */
-    MutableData.prototype.mutableData = false;
-
-    return MutableData;
-  });
-
-  /**
-   * Element class mixin to add the optional ability to skip strict
-   * dirty-checking for objects and arrays (always consider them to be
-   * "dirty") by setting a `mutable-data` attribute on an element instance.
-   *
-   * By default, `Polymer.PropertyEffects` performs strict dirty checking on
-   * objects, which means that any deep modifications to an object or array will
-   * not be propagated unless "immutable" data patterns are used (i.e. all object
-   * references from the root to the mutation were changed).
-   *
-   * Polymer also provides a proprietary data mutation and path notification API
-   * (e.g. `notifyPath`, `set`, and array mutation API's) that allow efficient
-   * mutation and notification of deep changes in an object graph to all elements
-   * bound to the same object graph.
-   *
-   * In cases where neither immutable patterns nor the data mutation API can be
-   * used, applying this mixin will allow Polymer to skip dirty checking for
-   * objects and arrays (always consider them to be "dirty").  This allows a
-   * user to make a deep modification to a bound object graph, and then either
-   * simply re-set the object (e.g. `this.items = this.items`) or call `notifyPath`
-   * (e.g. `this.notifyPath('items')`) to update the tree.  Note that all
-   * elements that wish to be updated based on deep mutations must apply this
-   * mixin or otherwise skip strict dirty checking for objects/arrays.
-   *
-   * While this mixin adds the ability to forgo Object/Array dirty checking,
-   * the `mutableData` flag defaults to false and must be set on the instance.
-   *
-   * Note, the performance characteristics of propagating large object graphs
-   * will be worse by relying on `mutableData: true` as opposed to using
-   * strict dirty checking with immutable patterns or Polymer's path notification
-   * API.
-   *
-   * @mixinFunction
-   * @polymer
-   * @memberof Polymer
-   * @summary Element class mixin to optionally skip strict dirty-checking
-   *   for objects and arrays
-   */
-  Polymer.OptionalMutableData = Polymer.dedupingMixin(superClass => {
-
-    /**
-     * @mixinClass
-     * @polymer
-     * @implements {Polymer_OptionalMutableData}
-     */
-    class OptionalMutableData extends superClass {
-
-      static get properties() {
-        return {
-          /**
-           * Instance-level flag for configuring the dirty-checking strategy
-           * for this element.  When true, Objects and Arrays will skip dirty
-           * checking, otherwise strict equality checking will be used.
-           */
-          mutableData: Boolean
-        };
-      }
-
-      /**
-       * Overrides `Polymer.PropertyEffects` to provide option for skipping
-       * strict equality checking for Objects and Arrays.
-       *
-       * When `this.mutableData` is true on this instance, this method
-       * pulls the value to dirty check against from the `__dataTemp` cache
-       * (rather than the normal `__data` cache) for Objects.  Since the temp
-       * cache is cleared at the end of a turn, this implementation allows
-       * side-effects of deep object changes to be processed by re-setting the
-       * same object (using the temp cache as an in-turn backstop to prevent
-       * cycles due to 2-way notification).
-       *
-       * @param {string} property Property name
-       * @param {*} value New property value
-       * @param {*} old Previous property value
-       * @return {boolean} Whether the property should be considered a change
-       * @protected
-       */
-      _shouldPropertyChange(property, value, old) {
-        return mutablePropertyChange(this, property, value, old, this.mutableData);
-      }
-    }
-
-    return OptionalMutableData;
-  });
-
-  // Export for use by legacy behavior
-  Polymer.MutableData._mutablePropertyChange = mutablePropertyChange;
-})();
-
-/***/ }),
-/* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneConfig; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_taktik_polymer_typescript__ = __webpack_require__(2);
-/// <amd-module name="ozone-config"/>
-var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-
-const configUrl = './conf.ozone.json';
-const ozoneAPIRequest = new __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__["a" /* OzoneAPIRequest */]();
-ozoneAPIRequest.url = configUrl;
-ozoneAPIRequest.method = 'GET';
-const configPromise = ozoneAPIRequest.sendRequest().then(res => {
-    return res.response.ozoneApi;
-}).catch(failRequest => {
-    console.error('Unable to find config at ', configUrl);
-    throw new Error('Unable to find config');
-});
-let OzoneConfig = class OzoneConfig {
-    static get() {
-        return configPromise;
-    }
-};
-OzoneConfig = __decorate([Object(__WEBPACK_IMPORTED_MODULE_1_taktik_polymer_typescript__["b" /* jsElement */])()], OzoneConfig);
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneAPIRequest; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__ = __webpack_require__(2);
-/// <amd-module name="ozone-api-request"/>
-var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-
-/**
- * OzoneAPIRequest is a light wrapper over XMLHttpRequest to manager AJAX request to Ozone.
- *
- * ### Events
- *
- * * *ozone-api-request-success* Fired when connection to ozone succeeds.
- * Event detail contains the XMLHttpRequest.
- *
- * * *ozone-api-request-error* Fired when connection to ozone fails.
- * Event detail contains the XMLHttpRequest.
- *
-
- * * *ozone-api-request-timeout* Fired when connection timeout.
- * Event detail contains the XMLHttpRequest.
- *
- * * *ozone-api-request-unauthorized* Fired when server return 403 unauthorized.
- * Event detail contains the XMLHttpRequest.
- *
- *
- * ### Usage
- *
- * * Basic usage with promise
- * ```typeScript
- * const OzoneAPIRequest = new OzoneAPIRequest();
- * OzoneAPIRequest.url = url;
- * OzoneAPIRequest.method = 'GET';
- * OzoneAPIRequest.sendRequest()
- *    .then((res:XMLHttpRequest) => {
- *        // Do something with XMLHttpRequest
- *        console.log(res.response)
- *    })
- *    .catch((failRequest)=>{
- *        // Do something with XMLHttpRequest to handel the error.
- *        console.error(failRequest.statusText)
- *    })
- * ```
- *
- *
- * * Usage with Event handler
- * ```typeScript
- * this.addEventListener('ozone-api-request-success', (event: Event) => {
- *        // Do something with XMLHttpRequest
- *        console.log(event.detail.response)
- *    })
- * this.addEventListener('ozone-api-request-error', (event: Event) => {
- *        // Do something with XMLHttpRequest to handel the error.
- *        console.error(event.detail.statusText)
- *    })
- * const OzoneAPIRequest = new OzoneAPIRequest();
- * OzoneAPIRequest.setEventTarget(this)
- * OzoneAPIRequest.url = url;
- * OzoneAPIRequest.method = 'GET';
- * OzoneAPIRequest.sendRequest();
- * ```
- *
- * * Modify request before send
- * ```typeScript
- * const OzoneAPIRequest = new OzoneAPIRequest();
- * OzoneAPIRequest.url = url;
- * OzoneAPIRequest.method = 'GET';
- * const request = OzoneAPIRequest.createXMLHttpRequest();
- * // Modify default request
- * request.setRequestHeader('Cache-Control', 'only-if-cached');
- *
- * OzoneAPIRequest.sendRequest(request);
- * // Handel response
- * ```
- *
- */
-let OzoneAPIRequest = class OzoneAPIRequest {
-    /**
-     * OzoneAPIRequest is a light wrapper over XMLHttpRequest to manager AJAX request to Ozone.
-     *
-     * ### Events
-     *
-     * * *ozone-api-request-success* Fired when connection to ozone succeeds.
-     * Event detail contains the XMLHttpRequest.
-     *
-     * * *ozone-api-request-error* Fired when connection to ozone fails.
-     * Event detail contains the XMLHttpRequest.
-     *
-    
-     * * *ozone-api-request-timeout* Fired when connection timeout.
-     * Event detail contains the XMLHttpRequest.
-     *
-     * * *ozone-api-request-unauthorized* Fired when server return 403 unauthorized.
-     * Event detail contains the XMLHttpRequest.
-     *
-     *
-     * ### Usage
-     *
-     * * Basic usage with promise
-     * ```typeScript
-     * const OzoneAPIRequest = new OzoneAPIRequest();
-     * OzoneAPIRequest.url = url;
-     * OzoneAPIRequest.method = 'GET';
-     * OzoneAPIRequest.sendRequest()
-     *    .then((res:XMLHttpRequest) => {
-     *        // Do something with XMLHttpRequest
-     *        console.log(res.response)
-     *    })
-     *    .catch((failRequest)=>{
-     *        // Do something with XMLHttpRequest to handel the error.
-     *        console.error(failRequest.statusText)
-     *    })
-     * ```
-     *
-     *
-     * * Usage with Event handler
-     * ```typeScript
-     * this.addEventListener('ozone-api-request-success', (event: Event) => {
-     *        // Do something with XMLHttpRequest
-     *        console.log(event.detail.response)
-     *    })
-     * this.addEventListener('ozone-api-request-error', (event: Event) => {
-     *        // Do something with XMLHttpRequest to handel the error.
-     *        console.error(event.detail.statusText)
-     *    })
-     * const OzoneAPIRequest = new OzoneAPIRequest();
-     * OzoneAPIRequest.setEventTarget(this)
-     * OzoneAPIRequest.url = url;
-     * OzoneAPIRequest.method = 'GET';
-     * OzoneAPIRequest.sendRequest();
-     * ```
-     *
-     * * Modify request before send
-     * ```typeScript
-     * const OzoneAPIRequest = new OzoneAPIRequest();
-     * OzoneAPIRequest.url = url;
-     * OzoneAPIRequest.method = 'GET';
-     * const request = OzoneAPIRequest.createXMLHttpRequest();
-     * // Modify default request
-     * request.setRequestHeader('Cache-Control', 'only-if-cached');
-     *
-     * OzoneAPIRequest.sendRequest(request);
-     * // Handel response
-     * ```
-     *
-     */
-    constructor() {
-        this._method = 'GET';
-        this._responseType = 'json';
-        /**
-         * eventTarget to dispatch *ozone-api-request-success* and *ozone-api-request-error* events
-         * Default value is document.
-         * @type {EventTarget}
-         */
-        this.eventTarget = document;
-    }
-    set url(url) {
-        this._url = url;
-    }
-    get url() {
-        return this._url;
-    }
-    set body(body) {
-        this._body = body;
-    }
-    get body() {
-        return this._body;
-    }
-    set method(method) {
-        this._method = method;
-    }
-    get method() {
-        return this._method;
-    }
-    set responseType(responseType) {
-        this._responseType = responseType;
-    }
-    get responseType() {
-        return this._responseType;
-    }
-    /**
-     * Create and open an XMLHttpRequest
-     * @return {XMLHttpRequest}
-     */
-    createXMLHttpRequest() {
-        const xmlhttp = new XMLHttpRequest();
-        xmlhttp.withCredentials = true;
-        xmlhttp.responseType = this.responseType;
-        xmlhttp.open(this.method, this.url, true);
-        xmlhttp.setRequestHeader("Content-Type", "application/json");
-        xmlhttp.setRequestHeader('Accept', 'application/json');
-        return xmlhttp;
-    }
-    setEventTarget(element) {
-        this.eventTarget = element;
-    }
-    /**
-     *
-     * @param {XMLHttpRequest} request (optional) This parameters overwrite the default XmlHttpRequest.
-     * @return {Promise<XMLHttpRequest>}
-     */
-    sendRequest(request) {
-        const xmlhttp = request || this.createXMLHttpRequest();
-        return new Promise((resolve, reject) => {
-            xmlhttp.onload = () => {
-                this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-success', {
-                    bubbles: true, composed: true, detail: xmlhttp
-                }));
-                resolve(xmlhttp);
-            };
-            xmlhttp.ontimeout = () => {
-                this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-timeout', {
-                    bubbles: true, composed: true, detail: xmlhttp
-                }));
-                reject(xmlhttp);
-            };
-            xmlhttp.onerror = () => {
-                switch (xmlhttp.status) {
-                    case 403:
-                        this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-unauthorized', {
-                            bubbles: true, composed: true, detail: xmlhttp
-                        }));
-                        break;
-                    default:
-                        this.eventTarget.dispatchEvent(new CustomEvent('ozone-api-request-error', {
-                            bubbles: true, composed: true, detail: xmlhttp
-                        }));
-                }
-                reject(xmlhttp);
-            };
-            xmlhttp.send(this.body);
-        });
-    }
-};
-OzoneAPIRequest = __decorate([Object(__WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__["b" /* jsElement */])()], OzoneAPIRequest);
-
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7926,7 +7926,7 @@ __webpack_require__(0);
 
 __webpack_require__(1);
 
-__webpack_require__(5);
+__webpack_require__(4);
 
 (function () {
   'use strict';
@@ -8095,7 +8095,7 @@ __webpack_require__(0);
 
 __webpack_require__(10);
 
-__webpack_require__(6);
+__webpack_require__(5);
 
 (function () {
   'use strict';
@@ -9618,7 +9618,7 @@ __webpack_require__(9);
 
 __webpack_require__(19);
 
-__webpack_require__(4);
+__webpack_require__(3);
 
 __webpack_require__(29);
 
@@ -10449,7 +10449,7 @@ __webpack_require__(10);
 
 __webpack_require__(0);
 
-__webpack_require__(4);
+__webpack_require__(3);
 
 /** @suppress {deprecated} */
 (function () {
@@ -10559,7 +10559,7 @@ __webpack_require__(4);
 /***/ (function(module, exports, __webpack_require__) {
 
 
-__webpack_require__(4);
+__webpack_require__(3);
 
 (function () {
   'use strict';
@@ -11150,7 +11150,7 @@ module.exports = g;
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 (function webpackUniversalModuleDefinition(root, factory) {
-	if (( false ? 'undefined' : _typeof2(exports)) === 'object' && ( false ? 'undefined' : _typeof2(module)) === 'object') module.exports = factory(__webpack_require__(3));else if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+	if (( false ? 'undefined' : _typeof2(exports)) === 'object' && ( false ? 'undefined' : _typeof2(module)) === 'object') module.exports = factory(__webpack_require__(8));else if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else if ((typeof exports === 'undefined' ? 'undefined' : _typeof2(exports)) === 'object') exports["ClapprMarkersPlugin"] = factory(require("Clappr"));else root["ClapprMarkersPlugin"] = factory(root["Clappr"]);
@@ -12327,7 +12327,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 	);
 });
 ;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(59)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(58)(module)))
 
 /***/ }),
 /* 25 */
@@ -12337,7 +12337,7 @@ var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbo
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ozone_video_player_ts__ = __webpack_require__(26);
 /* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "OzoneVideoPlayer", function() { return __WEBPACK_IMPORTED_MODULE_0__ozone_video_player_ts__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__demo_demo_app_ts__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__demo_demo_app_ts__ = __webpack_require__(68);
 /* empty harmony namespace reexport */
 
 
@@ -12352,18 +12352,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_polymer_polymer_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_polymer_polymer_html__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ozone_video_player_html__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ozone_video_player_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__ozone_video_player_html__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ozone_config__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ozone_config__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_taktik_polymer_typescript__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_Clappr__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_Clappr__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_Clappr___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_Clappr__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_clappr_rtmp_plugin__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_clappr_rtmp_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_clappr_rtmp_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_clappr_markers_plugin__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_clappr_markers_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_clappr_markers_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__Clappr_Subtitle__ = __webpack_require__(60);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clappr_marker__ = __webpack_require__(61);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_ozone_media_url__ = __webpack_require__(62);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ozone_api_mediaplay__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_clappr_markers_plugin__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_clappr_markers_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_clappr_markers_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__Clappr_Subtitle__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__clappr_marker__ = __webpack_require__(60);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_ozone_media_url__ = __webpack_require__(61);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__ozone_api_mediaplay__ = __webpack_require__(64);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -12388,7 +12386,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 
 
 
-
 /**
  * <ozone-video-player>
  */
@@ -12403,32 +12400,7 @@ let OzoneVideoPlayer = class OzoneVideoPlayer extends Polymer.Element {
          */
         this.defaultClapprParameters = {
             plugins: {
-                playback: [__WEBPACK_IMPORTED_MODULE_5_clappr_rtmp_plugin__],
-                core: [__WEBPACK_IMPORTED_MODULE_6_clappr_markers_plugin__, __WEBPACK_IMPORTED_MODULE_7__Clappr_Subtitle__["a" /* ClapprSubtitle */]],
-            },
-            //parentId: "#player",
-            rtmpConfig: {
-                scaling: 'stretch',
-                playbackType: 'live',
-                bufferTime: 1,
-                startLevel: 0,
-                switchRules: {
-                    "SufficientBandwidthRule": {
-                        "bandwidthSafetyMultiple": 1.15,
-                        "minDroppedFps": 2
-                    },
-                    "InsufficientBufferRule": {
-                        "minBufferLength": 2
-                    },
-                    "DroppedFramesRule": {
-                        "downSwitchByOne": 10,
-                        "downSwitchByTwo": 20,
-                        "downSwitchToZero": 24
-                    },
-                    "InsufficientBandwidthRule": {
-                        "bitrateMultiplier": 1.15
-                    }
-                }
+                core: [__WEBPACK_IMPORTED_MODULE_5_clappr_markers_plugin__, __WEBPACK_IMPORTED_MODULE_6__Clappr_Subtitle__["a" /* ClapprSubtitle */]],
             },
             markersPlugin: {
                 markers: [],
@@ -12443,12 +12415,12 @@ let OzoneVideoPlayer = class OzoneVideoPlayer extends Polymer.Element {
             }
             //mimeType : "application/vnd.apple.mpegurl",
         };
-        this.OzoneMediaUrl = __WEBPACK_IMPORTED_MODULE_9_ozone_media_url__["a" /* OzoneMediaUrl */]; //Exposed for testing purpose
+        this.OzoneMediaUrl = __WEBPACK_IMPORTED_MODULE_8_ozone_media_url__["a" /* OzoneMediaUrl */]; //Exposed for testing purpose
         this._subtitles = new Map();
     }
     get markerFactory() {
         if (!this._markerFactory)
-            this._markerFactory = new __WEBPACK_IMPORTED_MODULE_8__clappr_marker__["a" /* ClapprMarkerFactory */](this);
+            this._markerFactory = new __WEBPACK_IMPORTED_MODULE_7__clappr_marker__["a" /* ClapprMarkerFactory */](this);
         return this._markerFactory;
     }
     static get properties() {
@@ -12539,7 +12511,7 @@ let OzoneVideoPlayer = class OzoneVideoPlayer extends Polymer.Element {
                 this._updateSubtitlesAvailable(data);
                 const mediaUrl = new this.OzoneMediaUrl(data.id, config);
                 const url = yield mediaUrl.getVideoUrl();
-                const previewImage = mediaUrl.getPreviewUrlJpg(__WEBPACK_IMPORTED_MODULE_9_ozone_media_url__["b" /* OzonePreviewSize */].Small);
+                const previewImage = mediaUrl.getPreviewUrlJpg(__WEBPACK_IMPORTED_MODULE_8_ozone_media_url__["b" /* OzonePreviewSize */].Small);
                 const clapprConfig = this.addConfigSubtitle(data, config);
                 const param = Object.assign({
                     source: url,
@@ -12548,7 +12520,7 @@ let OzoneVideoPlayer = class OzoneVideoPlayer extends Polymer.Element {
                 this.createPlayer(param);
                 this.intervalReporter = window.setInterval(() => {
                     this.reportUsage();
-                }, __WEBPACK_IMPORTED_MODULE_10__ozone_api_mediaplay__["a" /* ReportInterval_ms */]);
+                }, __WEBPACK_IMPORTED_MODULE_9__ozone_api_mediaplay__["a" /* ReportInterval_ms */]);
             }
         });
     }
@@ -12576,7 +12548,7 @@ let OzoneVideoPlayer = class OzoneVideoPlayer extends Polymer.Element {
     }
     reportUsage() {
         if (this._videoPlaying && this.player && this.player.isPlaying())
-            __WEBPACK_IMPORTED_MODULE_10__ozone_api_mediaplay__["b" /* ozoneApiMediaplay */].reportMediaUsage(this._videoPlaying);
+            __WEBPACK_IMPORTED_MODULE_9__ozone_api_mediaplay__["b" /* ozoneApiMediaplay */].reportMediaUsage(this._videoPlaying);
     }
     createPlayer(param) {
         this.destroy();
@@ -12885,7 +12857,7 @@ __webpack_require__(28);
 
 __webpack_require__(0);
 
-__webpack_require__(4);
+__webpack_require__(3);
 
 (function () {
   'use strict';
@@ -13297,7 +13269,7 @@ __webpack_require__(1);
 
 __webpack_require__(9);
 
-__webpack_require__(5);
+__webpack_require__(4);
 
 (function () {
 
@@ -14381,7 +14353,7 @@ __webpack_require__(1);
 
 __webpack_require__(0);
 
-__webpack_require__(5);
+__webpack_require__(4);
 
 __webpack_require__(11);
 
@@ -15931,7 +15903,7 @@ __webpack_require__(0);
 
 __webpack_require__(21);
 
-__webpack_require__(5);
+__webpack_require__(4);
 
 (function () {
   'use strict';
@@ -16701,7 +16673,7 @@ __webpack_require__(0);
 
 __webpack_require__(10);
 
-__webpack_require__(6);
+__webpack_require__(5);
 
 __webpack_require__(20);
 
@@ -16834,7 +16806,7 @@ __webpack_require__(11);
 
 __webpack_require__(12);
 
-__webpack_require__(6);
+__webpack_require__(5);
 
 (function () {
   'use strict';
@@ -18388,7 +18360,7 @@ __webpack_require__(48);
 /***/ (function(module, exports, __webpack_require__) {
 
 
-__webpack_require__(6);
+__webpack_require__(5);
 
 (function () {
   'use strict';
@@ -19896,240 +19868,6 @@ process.umask = function () {
 
 /***/ }),
 /* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-(function webpackUniversalModuleDefinition(root, factory) {
-	if (true) module.exports = factory(__webpack_require__(3));else if (typeof define === 'function' && define.amd) define(["Clappr"], factory);else if (typeof exports === 'object') exports["RTMP"] = factory(require("Clappr"));else root["RTMP"] = factory(root["Clappr"]);
-})(this, function (__WEBPACK_EXTERNAL_MODULE_2__) {
-	return (/******/function (modules) {
-			// webpackBootstrap
-			/******/ // The module cache
-			/******/var installedModules = {};
-
-			/******/ // The require function
-			/******/function __webpack_require__(moduleId) {
-
-				/******/ // Check if module is in cache
-				/******/if (installedModules[moduleId])
-					/******/return installedModules[moduleId].exports;
-
-				/******/ // Create a new module (and put it into the cache)
-				/******/var module = installedModules[moduleId] = {
-					/******/exports: {},
-					/******/id: moduleId,
-					/******/loaded: false
-					/******/ };
-
-				/******/ // Execute the module function
-				/******/modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
-				/******/ // Flag the module as loaded
-				/******/module.loaded = true;
-
-				/******/ // Return the exports of the module
-				/******/return module.exports;
-				/******/
-			}
-
-			/******/ // expose the modules object (__webpack_modules__)
-			/******/__webpack_require__.m = modules;
-
-			/******/ // expose the module cache
-			/******/__webpack_require__.c = installedModules;
-
-			/******/ // __webpack_public_path__
-			/******/__webpack_require__.p = "";
-
-			/******/ // Load entry module and return exports
-			/******/return __webpack_require__(0);
-			/******/
-		}(
-		/************************************************************************/
-		/******/[
-		/* 0 */
-		/***/function (module, exports, __webpack_require__) {
-
-			'use strict';
-			Object.defineProperty(exports, '__esModule', { value: true });exports['default'] = __webpack_require__(1);module.exports = exports['default'];
-
-			/***/
-		},
-		/* 1 */
-		/***/function (module, exports, __webpack_require__) {
-
-			// Copyright 2014 Globo.com Player authors. All rights reserved.
-			// Use of this source code is governed by a BSD-style
-			// license that can be found in the LICENSE file.
-			'use strict';
-			Object.defineProperty(exports, '__esModule', { value: true });var _createClass = function () {
-				function defineProperties(target, props) {
-					for (var i = 0; i < props.length; i++) {
-						var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ('value' in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-					}
-				}return function (Constructor, protoProps, staticProps) {
-					if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-				};
-			}();var _get = function get(_x, _x2, _x3) {
-				var _again = true;_function: while (_again) {
-					var object = _x,
-					    property = _x2,
-					    receiver = _x3;_again = false;if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
-						var parent = Object.getPrototypeOf(object);if (parent === null) {
-							return undefined;
-						} else {
-							_x = parent;_x2 = property;_x3 = receiver;_again = true;desc = parent = undefined;continue _function;
-						}
-					} else if ('value' in desc) {
-						return desc.value;
-					} else {
-						var getter = desc.get;if (getter === undefined) {
-							return undefined;
-						}return getter.call(receiver);
-					}
-				}
-			};function _interopRequireDefault(obj) {
-				return obj && obj.__esModule ? obj : { 'default': obj };
-			}function _classCallCheck(instance, Constructor) {
-				if (!(instance instanceof Constructor)) {
-					throw new TypeError('Cannot call a class as a function');
-				}
-			}function _inherits(subClass, superClass) {
-				if (typeof superClass !== 'function' && superClass !== null) {
-					throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass);
-				}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-			}var _clappr = __webpack_require__(2);var _publicFlashHtml = __webpack_require__(3);var _publicFlashHtml2 = _interopRequireDefault(_publicFlashHtml);var _rawSassPublicFlashScss = __webpack_require__(4);var _rawSassPublicFlashScss2 = _interopRequireDefault(_rawSassPublicFlashScss);var RTMP = function (_Flash) {
-				_inherits(RTMP, _Flash);_createClass(RTMP, [{ key: 'name', get: function get() {
-						return 'rtmp';
-					} }, { key: 'tagName', get: function get() {
-						return 'object';
-					} }, { key: 'template', get: function get() {
-						return (0, _clappr.template)(_publicFlashHtml2['default']);
-					} }, { key: 'attributes', get: function get() {
-						return { 'data-rtmp': '', 'type': 'application/x-shockwave-flash', 'width': '100%', 'height': '100%' };
-					} }]);function RTMP(options) {
-					_classCallCheck(this, RTMP);_get(Object.getPrototypeOf(RTMP.prototype), 'constructor', this).call(this, options);this.options.rtmpConfig = this.options.rtmpConfig || {};this.options.rtmpConfig.swfPath = this.options.rtmpConfig.swfPath || '//cdn.jsdelivr.net/clappr.rtmp/latest/assets/RTMP.swf';this.options.rtmpConfig.wmode = this.options.rtmpConfig.wmode || 'transparent'; // Default to transparent wmode - IE always uses gpu as per objectIE
-					this.options.rtmpConfig.bufferTime = this.options.rtmpConfig.bufferTime === undefined ? 0.1 : this.options.rtmpConfig.bufferTime;this.options.rtmpConfig.scaling = this.options.rtmpConfig.scaling || 'letterbox';this.options.rtmpConfig.playbackType = this.options.rtmpConfig.playbackType || this.options.src.indexOf('live') > -1;this.options.rtmpConfig.useAppInstance = this.options.rtmpConfig.useAppInstance === undefined ? false : this.options.rtmpConfig.useAppInstance;this.options.rtmpConfig.proxyType = this.options.rtmpConfig.proxyType || 'none';this.options.rtmpConfig.startLevel = this.options.rtmpConfig.startLevel === undefined ? -1 : this.options.rtmpConfig.startLevel;this.options.rtmpConfig.autoSwitch = this.options.rtmpConfig.autoSwitch === undefined ? false : this.options.rtmpConfig.autoSwitch;this.options.rtmpConfig.switchRules = this.options.rtmpConfig.switchRules;this.addListeners();this._setupPlaybackType();
-				}_createClass(RTMP, [{ key: 'getPlaybackType', value: function getPlaybackType() {
-						return this._playbackType;
-					} }, { key: 'addListeners', value: function addListeners() {
-						_clappr.Mediator.on(this.uniqueId + ':progress', this._progress, this);_clappr.Mediator.on(this.uniqueId + ':timeupdate', this._updateTime, this);_clappr.Mediator.on(this.uniqueId + ':statechanged', this._checkState, this);_clappr.Mediator.on(this.uniqueId + ':playbackready', this._playbackReady, this);_clappr.Mediator.on(this.uniqueId + ':onloaded', this._reporLevels, this);_clappr.Mediator.on(this.uniqueId + ':levelChanging', this._levelChanging, this);_clappr.Mediator.on(this.uniqueId + ':levelChanged', this._levelChange, this);_clappr.Mediator.on(this.uniqueId + ':flashready', this._bootstrap, this);
-					} }, { key: 'stopListening', value: function stopListening() {
-						_get(Object.getPrototypeOf(RTMP.prototype), 'stopListening', this).call(this);_clappr.Mediator.off(this.uniqueId + ':progress');_clappr.Mediator.off(this.uniqueId + ':timeupdate');_clappr.Mediator.off(this.uniqueId + ':statechanged');_clappr.Mediator.off(this.uniqueId + ':flashready');
-					} }, { key: '_bootstrap', value: function _bootstrap() {
-						this.el.width = '100%';this.el.height = '100%';this.options.autoPlay && this.play();this._setupSettings();
-					} }, { key: '_updateTime', value: function _updateTime() {
-						if (this.getPlaybackType() === 'live') {
-							this.trigger(_clappr.Events.PLAYBACK_TIMEUPDATE, { current: 1, total: 1 }, this.name);
-						} else {
-							this.trigger(_clappr.Events.PLAYBACK_TIMEUPDATE, { current: this.el.getPosition(), total: this.el.getDuration() }, this.name);
-						}
-					} }, { key: '_levelChanging', value: function _levelChanging() {
-						this.trigger(_clappr.Events.PLAYBACK_LEVEL_SWITCH_START);
-					} }, { key: '_levelChange', value: function _levelChange() {
-						this.trigger(_clappr.Events.PLAYBACK_LEVEL_SWITCH_END);this.trigger(_clappr.Events.PLAYBACK_BITRATE, { level: this.currentLevel });
-					} }, { key: 'findLevelBy', value: function findLevelBy(id) {
-						var foundLevel;this.levels.forEach(function (level) {
-							if (level.id === id) {
-								foundLevel = level;
-							}
-						});return foundLevel;
-					} }, { key: '_setupPlaybackType', value: function _setupPlaybackType() {
-						this._playbackType = this.options.rtmpConfig.playbackType;
-					} }, { key: '_setupSettings', value: function _setupSettings() {
-						if (this.getPlaybackType() === 'live') {
-							this.settings.left = ["playpause"];this.settings.right = ["fullscreen", "volume"];this.settings.seekEnabled = false;
-						} else {
-							this.settings.left = ["playpause", "position", "duration"];this.settings.right = ["fullscreen", "volume"];
-						}this.trigger(_clappr.Events.PLAYBACK_SETTINGSUPDATE, this.name);
-					} }, { key: 'render', value: function render() {
-						this.$el.html(this.template({ cid: this.cid, swfPath: this.swfPath, playbackId: this.uniqueId, wmode: this.options.rtmpConfig.wmode, scaling: this.options.rtmpConfig.scaling, bufferTime: this.options.rtmpConfig.bufferTime, playbackType: this.options.rtmpConfig.playbackType, startLevel: this.options.rtmpConfig.startLevel, autoSwitch: this.options.rtmpConfig.autoSwitch, switchRules: this._switchRulesJSON, useAppInstance: this.options.rtmpConfig.useAppInstance, proxyType: this.options.rtmpConfig.proxyType }));if (_clappr.Browser.isIE) {
-							this.$('embed').remove();if (_clappr.Browser.isLegacyIE) {
-								this.$el.attr('classid', IE_CLASSID);
-							}
-						} else if (_clappr.Browser.isFirefox) {
-							this._setupFirefox();
-						}this.el.id = this.cid;var style = _clappr.Styler.getStyleFor(_rawSassPublicFlashScss2['default']);this.$el.append(style);return this;
-					} }, { key: '_checkState', value: function _checkState() {
-						_get(Object.getPrototypeOf(RTMP.prototype), '_checkState', this).call(this);if (this.el.getState() === "PLAYING") {
-							this.trigger(_clappr.Events.PLAYBACK_PLAY, this.name);
-						} else if (this.el.getState() === "ERROR") {
-							this.trigger(_clappr.Events.PLAYBACK_ERROR, this.name);
-						}
-					} }, { key: '_playbackReady', value: function _playbackReady() {
-						this._isReadyState = true;this.trigger(_clappr.Events.PLAYBACK_READY, this.name);
-					} }, { key: '_reporLevels', value: function _reporLevels() {
-						if (this.isDynamicStream) {
-							if (this.levels) {
-								if (this.options.rtmpConfig.autoSwitch === true) {
-									this.trigger(_clappr.Events.PLAYBACK_LEVELS_AVAILABLE, this.levels, -1);this.trigger(_clappr.Events.PLAYBACK_BITRATE, { level: this.currentLevel });
-								} else {
-									this.trigger(_clappr.Events.PLAYBACK_LEVELS_AVAILABLE, this.levels, this.options.rtmpConfig.startLevel);
-								}
-							}
-						}
-					} }, { key: 'swfPath', get: function get() {
-						return this.options.rtmpConfig.swfPath;
-					} }, { key: 'currentLevel', get: function get() {
-						if (this._isReadyState) {
-							return this.el.getCurrentLevel();
-						}return undefined;
-					}, set: function set(level) {
-						this.el.setLevel(level);if (level === -1 && level !== this.currentLevel) {
-							this.trigger(_clappr.Events.PLAYBACK_LEVEL_SWITCH_END);this.trigger(_clappr.Events.PLAYBACK_BITRATE, { level: this.currentLevel });
-						}
-					} }, { key: 'numLevels', get: function get() {
-						if (this._isReadyState) {
-							return this.el.getNumLevels();
-						}return undefined;
-					} }, { key: 'autoSwitchLevels', get: function get() {
-						return this.el.isAutoSwitchLevels();
-					} }, { key: 'levels', get: function get() {
-						var levels = [];for (var i = 0; i < this.numLevels; i++) {
-							var bitrate = this.el.getBitrateForLevel(i);levels.push({ id: i, label: bitrate + "Kbps" });
-						}return levels;
-					} }, { key: 'isDynamicStream', get: function get() {
-						return this.el.isDynamicStream();
-					} }, { key: '_switchRulesJSON', get: function get() {
-						if (this.options.rtmpConfig.switchRules !== undefined) {
-							return JSON.stringify(this.options.rtmpConfig.switchRules).replace(/"/g, '&quot;');
-						}return "";
-					} }]);return RTMP;
-			}(_clappr.Flash);exports['default'] = RTMP;RTMP.canPlay = function (source) {
-				return !!((source.indexOf('rtmp://') > -1 || source.indexOf('rtmps://') > -1 || source.indexOf('.smil') > -1) && _clappr.Browser.hasFlash);
-			};RTMP.debug = function (s) {
-				return console.log(s);
-			};module.exports = exports['default'];
-
-			/***/
-		},
-		/* 2 */
-		/***/function (module, exports) {
-
-			module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
-
-			/***/
-		},
-		/* 3 */
-		/***/function (module, exports) {
-
-			module.exports = "<param name=\"movie\" value=\"<%= swfPath %>?inline=1\">\n<param name=\"quality\" value=\"autohigh\">\n<param name=\"swliveconnect\" value=\"true\">\n<param name=\"allowScriptAccess\" value=\"always\">\n<param name=\"allownetworking\" value=\"all\">\n<param name=\"bgcolor\" value=\"#000000\">\n<param name=\"allowFullScreen\" value=\"false\">\n<param name=\"wmode\" value=\"<%= wmode %>\">\n<param name=\"tabindex\" value=\"1\">\n<param name=FlashVars value=\"playbackId=<%= playbackId %>&scaling=<%= scaling %>&bufferTime=<%= bufferTime %>&playbackType=<%= playbackType %>&startLevel=<%= startLevel %>&useAppInstance=<%= useAppInstance %>&proxyType=<%= proxyType %>&autoSwitch=<%= autoSwitch %>&switchRules=<%= switchRules %>\"/>\n<embed\n  name=\"<%= cid %>\"\n  type=\"application/x-shockwave-flash\"\n  disabled=\"disabled\"\n  tabindex=\"-1\"\n  enablecontextmenu=\"false\"\n  allowScriptAccess=\"always\"\n  allownetworking=\"all\"\n  quality=\"autohigh\"\n  pluginspage=\"http://www.macromedia.com/go/getflashplayer\"\n  wmode=\"<%= wmode %>\"\n  swliveconnect=\"true\"\n  allowfullscreen=\"false\"\n  bgcolor=\"#000000\"\n  FlashVars=\"playbackId=<%= playbackId %>&scaling=<%= scaling %>&bufferTime=<%= bufferTime %>&playbackType=<%= playbackType %>&startLevel=<%= startLevel %>&useAppInstance=<%= useAppInstance %>&proxyType=<%= proxyType %>&autoSwitch=<%= autoSwitch %>&switchRules=<%= switchRules %>\"\n  src=\"<%= swfPath %>\"\n  width=\"100%\"\n  height=\"100%\">\n</embed>\n";
-
-			/***/
-		},
-		/* 4 */
-		/***/function (module, exports) {
-
-			module.exports = ".clappr-flash-playback[data-flash-playback] {\n  display: block;\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 100%;\n  width: 100%;\n  pointer-events: none; }\n";
-
-			/***/
-		}
-		/******/])
-	);
-});
-;
-
-/***/ }),
-/* 59 */
 /***/ (function(module, exports) {
 
 module.exports = function (module) {
@@ -20156,11 +19894,11 @@ module.exports = function (module) {
 };
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Clappr__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Clappr__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_Clappr___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_Clappr__);
 /*!
  *
@@ -20496,7 +20234,7 @@ class ClapprSubtitle extends __WEBPACK_IMPORTED_MODULE_0_Clappr__["UICorePlugin"
 
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20617,15 +20355,15 @@ class ClapprMarkerFactory {
 
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return OzonePreviewSize; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneMediaUrl; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_item__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ozone_config__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_item__ = __webpack_require__(62);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ozone_config__ = __webpack_require__(6);
 /// <amd-module name="ozone-media-url"/>
 /**
  * Created by hubert on 21/06/17.
@@ -20784,15 +20522,15 @@ OzoneMediaUrl = __decorate([Object(__WEBPACK_IMPORTED_MODULE_0_taktik_polymer_ty
 
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OzoneApiItem; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_config__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_request__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_config__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_request__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_taktik_polymer_typescript__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ozone_search_helper__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ozone_search_helper__ = __webpack_require__(63);
 /**
  * Created by hubert on 8/06/17.
  */
@@ -21002,14 +20740,14 @@ OzoneApiItem = __decorate([Object(__WEBPACK_IMPORTED_MODULE_2_taktik_polymer_typ
 
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* unused harmony export SearchQuery */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SearchGenerator; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_taktik_polymer_typescript__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_request__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_api_request__ = __webpack_require__(7);
 /// <amd-module name="ozone-search-helper"/>
 var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
     var c = arguments.length,
@@ -21157,13 +20895,13 @@ SearchGenerator = __decorate([Object(__WEBPACK_IMPORTED_MODULE_0_taktik_polymer_
 
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_config__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_uuid_v4__ = __webpack_require__(66);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_ozone_api_request__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ozone_config__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_uuid_v4__ = __webpack_require__(65);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_uuid_v4__);
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -21214,11 +20952,11 @@ const ozoneApiMediaplay = new OzoneApiMediaplay();
 
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(67);
-var bytesToUuid = __webpack_require__(68);
+var rng = __webpack_require__(66);
+var bytesToUuid = __webpack_require__(67);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -21248,7 +20986,7 @@ function v4(options, buf, offset) {
 module.exports = v4;
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -21287,7 +21025,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
 
 /***/ }),
-/* 68 */
+/* 67 */
 /***/ (function(module, exports) {
 
 /**
@@ -21308,13 +21046,13 @@ function bytesToUuid(buf, offset) {
 module.exports = bytesToUuid;
 
 /***/ }),
-/* 69 */
+/* 68 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_polymer_polymer_html__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_polymer_polymer_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_polymer_polymer_html__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__demo_app_html__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__demo_app_html__ = __webpack_require__(69);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__demo_app_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__demo_app_html__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_taktik_polymer_typescript__ = __webpack_require__(2);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -21367,7 +21105,7 @@ demoApp = __decorate([
 
 
 /***/ }),
-/* 70 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 

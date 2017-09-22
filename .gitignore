@@ -4,4 +4,5 @@
 /doc/
 /.idea/
 /junitReport/test-report.xml
-dist
+/dist
+/coverage/
