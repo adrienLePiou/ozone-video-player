@@ -1,25 +1,79 @@
 <dom-module id="ozone-video-player">
   <template>
     <style>
-      .element {
+      .element{
         position: absolute;
         overflow: hidden;
-        background: rgba(255,255,255,0.7);
-        min-height: 20px;
-        max-height: 20px;
+        background: var(--marker-bar-background, rgba(29,38,43,0.52));
+        min-height: 10px;
+        max-height: 10px;
         width: 20%;
+        top: 4px;
+        transform-origin:center center;
+        min-width:10px;
+        @apply --marker-bar;
       }
       .resizer{
         width: 5px;
         height: 100%;
-        background: #2b80f3;
         position: absolute;
         bottom: 0;
-        cursor: se-resize;
+        cursor: ew-resize;
+        background: var(--resizer-color, rgba(29,38,43,0.9));
+        @apply --resizer;
       }
-      .subtitle{
 
+      .resizer::after{
+        content:'';
+        position:absolute;
+        left:50%;
+        top:50%;
+        display:block;
+        width:1px;
+        height:80%;
+        transform: translate(-50%,-50%);
+        background: var(--resizer-handle-color, rgba(255,255,255,0.2));
       }
+      .moving-tooltip::before{
+        content:attr(data-attr);
+        display:block;
+        width:60px;
+        height:16px;
+        background:var(--moving-tooltip-background-color, rgba(29,38,43,0.9));
+        position:fixed;
+        bottom:60px;
+        transform:translateX(-50%);
+        color:var(--moving-tooltip-text-color, white);
+        font-size:12px;
+        text-align:center;
+        line-height:10px;
+        padding-top:6px;
+        border-radius:2px;
+        @apply --moving-tooltip-mixin;
+      }
+
+      .edit-mode > .media-control-center-panel > .bar-container > .bar-background{
+        height:10px!important;
+        top: 4px!important;
+        background:#95a5a6!important;
+      }
+
+      .bar-fill-1{
+        background:#bdc3c7!important;
+      }
+
+      .bar-fill-2{
+        background:#50E3C2!important;
+      }
+
+      .edit-mode > .media-control-center-panel > .bar-container > .bar-scrubber > .bar-scrubber-icon {
+        left: 8px!important;
+        top: 1px!important;
+        width: 12px!important;
+        height: 12px!important;
+      }
+
+
     </style>
     <div id="player"></div>
   </template>
