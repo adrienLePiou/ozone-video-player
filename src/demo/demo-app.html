@@ -6,7 +6,7 @@
 
             <ozone-video-player
                     id="mediaPlayer"
-                    video-url="test/data/big_buck_bunny/index.m3u8"
+                    video-url="[[videoUrl]]"
                     hidden="[[!display]]"
                     markers="{{markers}}"
                     subtitles-available="{{subtitles}}"
@@ -27,7 +27,8 @@
 
             <p></p>
             Load video
-            <button id="load"> load a video</button>
+            <button id="loadUrl"> load a video from url</button>
+            <button id="loadOzoneSub"> load a video with subtitle</button>
 
         </div>
     </template>

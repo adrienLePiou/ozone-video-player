@@ -78,7 +78,6 @@ export class OzoneVideoPlayer extends Polymer.Element{
 
 
     private _intervalReporter?:number;
-    private _videoPlaying?: Video;
 
 
     $:{
@@ -171,10 +170,18 @@ export class OzoneVideoPlayer extends Polymer.Element{
      * @return {Promise<void>}
      */
     public async loadOzoneVideo(data?: Video){
+        if (data) {
+            this.video = data;
+        }
+    }
+
+    private async _loadOzoneVideo(data?: Video){
+
         const config = await (Config.OzoneConfig.get());
 
+
         if(data) {
-            this._videoPlaying = data;
+            this.video = data;
             this._updateSubtitlesAvailable(data);
             const mediaUrl = new this.OzoneMediaUrl(data.id as string, config);
             const url = await mediaUrl.getVideoUrl();
@@ -221,8 +228,8 @@ export class OzoneVideoPlayer extends Polymer.Element{
     }
 
     reportUsage(){
-        if(this._videoPlaying && this.player && this.player.isPlaying())
-            ozoneApiMediaplay.reportMediaUsage(this._videoPlaying);
+        if(this.video && this.player && this.player.isPlaying())
+            ozoneApiMediaplay.reportMediaUsage(this.video);
     }
 
     createPlayer(param: Clappr.ClapprParam){
@@ -250,7 +257,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
     }
     private videoChange(video? : Video){
         if (video){
-            this.loadOzoneVideo(video);
+            this._loadOzoneVideo(video);
         }
     }
 

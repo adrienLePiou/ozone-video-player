@@ -1,10 +1,13 @@
 /* webpack.config.js */
 
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
-var HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
-var Clean = require('clean-webpack-plugin');
-var path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlIncluderWebpackPlugin = require('html-includer-webpack-plugin').default;
+const Clean = require('clean-webpack-plugin');
+const path = require('path');
+
+const setupOzoneMockup = require('./test/ozoneMockup');
+
 console.log(path.resolve(__dirname))
 module.exports = {
     // Tell Webpack which file kicks off our app.
@@ -88,6 +91,8 @@ module.exports = {
     devServer: {
         contentBase: path.join(__dirname),
         compress: true,
-        port: 9000
+        overlay: true,
+        port: 9000,
+        setup : setupOzoneMockup,
     },
 };
