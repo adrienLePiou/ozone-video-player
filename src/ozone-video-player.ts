@@ -3,7 +3,6 @@ import './ozone-video-player.html';
 import * as Config from 'ozone-config';
 import {customElement} from 'taktik-polymer-typescript'
 import * as Clappr from 'Clappr'
-import * as RTMP from 'clappr-rtmp-plugin'
 import * as ClapprMarkersPlugin from 'clappr-markers-plugin'
 import * as ClapprSubtitle from './Clappr-Subtitle'
 import {ClapprMarkerFactory, MarkerOnVideo} from './clappr-marker'
@@ -16,6 +15,20 @@ import{ozoneApiMediaplay, ReportInterval_ms} from './ozone-api-mediaplay'
 export type MarkerOnVideo = MarkerOnVideo;
 /**
  * <ozone-video-player>
+ *     ### Styling
+ *
+ * The following custom properties are available for styling:
+ *
+ * Custom property | Description | Default
+ * ----------------|-------------|----------
+ * `--marker-bar-background` | Background color of the marker's bar | `rgba(29,38,43,0.52)`
+ * `--resizer-color` | Background color of the resizer | `rgba(29,38,43,0.9)`
+ * `--resizer-handle-color` | Background color of the resizer's handle | `rgba(255,255,255,0.2)`
+ * `--marker-bar` | Mixin applied to the marker's bar| {}
+ * `--resizer` | Mixin applied to the marker's bar| {}
+ * `--moving-tooltip-background-color` | Background color of the moving tooltip | `rgba(29,38,43,0.9)`
+ * `--moving-tooltip-text-color` | Text color of the moving tooltip | `white`
+ * `--moving-tooltip-mixin` | Mixin applied to the marker's bar| {}
  */
 @customElement('ozone-video-player')
 export class OzoneVideoPlayer extends Polymer.Element{
@@ -46,7 +59,6 @@ export class OzoneVideoPlayer extends Polymer.Element{
     public defaultClapprParameters: Clappr.ClapprParam = {
 
         plugins: {
-            playback: [RTMP],
             core: [ClapprMarkersPlugin, ClapprSubtitle.ClapprSubtitle],
         },
         //parentId: "#player",
@@ -298,6 +310,7 @@ export class OzoneVideoPlayer extends Polymer.Element{
             const aMarker = this.buildMarker(videoMarker, this.markers.length -1);
             const markersPlugin = this.player.getPlugin('markers-plugin') as ClapprMarkersPlugin.MarkersPluginType;
             markersPlugin.addMarker(aMarker);
+            this.$.player.getElementsByClassName("media-control-layer")[0].classList.add("edit-mode");
         }
     };
 
@@ -315,6 +328,8 @@ export class OzoneVideoPlayer extends Polymer.Element{
             const markersPlugin = this.player.getPlugin('markers-plugin') as ClapprMarkersPlugin.MarkersPluginType;
             markersPlugin.clearMarkers();
             this.set('markers',[]);
+            this.$.player.getElementsByClassName("media-control-layer")[0].classList.remove("edit-mode");
+
         }
     };
 

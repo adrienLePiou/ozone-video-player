@@ -34,6 +34,7 @@ export class ClapprMarkerFactory {
         }, false);
         var resizerL = document.createElement('div');
         resizerL.className = 'resizer';
+        resizerL.id = 'resizerL';
         element.appendChild(resizerL);
 
         resizerL.addEventListener('mousedown', (e) => {
@@ -51,40 +52,38 @@ export class ClapprMarkerFactory {
         };
         function initResize(e: Event)
         {
-            console.log('STOP initResize')
             e.stopPropagation();
             window.addEventListener('mousemove', Resize, false);
             window.addEventListener('mouseup', stopResize, false);
         }
         function Resize(e: MouseEvent)
         {
-            console.log('STOP Resize')
             e.stopPropagation();
+            const bMarkerTime = aMarker.getDuration() + aMarker.getTime();
+            resizer.classList.add('moving-tooltip');
+            resizer.setAttribute('data-attr', '' + secondsToHms(bMarkerTime));
             const movePx = (e.clientX - element.offsetLeft);
             const parentElement = element.parentElement as HTMLElement;
             const movePc = (movePx / parentElement.clientWidth) * 100;
-
             element.style.width = movePc + '%';
             updateMarker();
         }
         function stopResize(e: Event)
         {
-            console.log('STOP stopResize')
             e.stopPropagation();
+            resizer.classList.remove('moving-tooltip');
             window.removeEventListener('mousemove', Resize, false);
             window.removeEventListener('mouseup', stopResize, false);
         }
 
         function initResizeLeft(e: Event)
         {
-            console.log('STOP initResizeLeft')
             e.stopPropagation();
             window.addEventListener('mousemove', ResizeLeft, false);
             window.addEventListener('mouseup', stopResizeLeft, false);
         }
         function ResizeLeft(e: MouseEvent)
         {
-            console.log('STOP ResizeLeft')
             e.stopPropagation();
             let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
@@ -93,48 +92,56 @@ export class ClapprMarkerFactory {
             const movePx = (e.clientX - element.offsetLeft);
             const parentElement = element.parentElement as HTMLElement;
             const movePc = (movePx / parentElement.clientWidth) * 100;
-
+            resizerL.classList.add('moving-tooltip');
+            resizerL.setAttribute('data-attr', '' + secondsToHms(aMarker.getTime()));
             element.style.left = left + movePc + '%';
             element.style.width =  parseFloat(element.style.width || '') -  movePc + '%';
             updateMarker();
         }
         function stopResizeLeft(e: Event)
         {
-            console.log('STOP stopResizeLeft')
             e.stopPropagation();
+            resizerL.classList.remove('moving-tooltip');
             window.removeEventListener('mousemove', ResizeLeft, false);
             window.removeEventListener('mouseup', stopResizeLeft, false);
         }
-
-
         function initTranslate(e: Event)
         {
-            console.log('STOP initTranslate')
             e.stopPropagation();
             window.addEventListener('mousemove', transtlate, false);
             window.addEventListener('mouseup', stopTranstlate, false);
         }
         function transtlate(e: MouseEvent )
         {
-            console.log('STOP transtlate')
             e.stopPropagation();
             let left = parseFloat(element.style.left || '');
             if (isNaN(left)) {
                 left = 0;
             }
-            const movePx = (e.clientX - element.offsetLeft);
             const parentElement = element.parentElement as HTMLElement;
-            const movePc = (movePx / parentElement.clientWidth) * 100;
+            const movePc = (e.movementX / parentElement.clientWidth) * 100;
+
 
             element.style.left = left + movePc + '%';
             updateMarker();
         }
         function stopTranstlate(e: Event)
         {
-            console.log('STOP stopTranstlate')
             e.stopPropagation();
             window.removeEventListener('mousemove', transtlate, false);
             window.removeEventListener('mouseup', stopTranstlate, false);
+        }
+        function secondsToHms(d: number) {
+            d = Number(d);
+            const h = Math.floor(d / 3600);
+            const m = Math.floor(d % 3600 / 60);
+            const s = Math.floor(d % 3600 % 60);
+            let hours = ('0' + h).slice(-2) + ":";
+            let minutes = ('0' + m).slice(-2) + ":";
+            if(h <= 1) {
+                hours = "";
+            }
+            return  hours + minutes + ('0' + s).slice(-2);
         }
         aMarker._$marker = element;
         return aMarker;
